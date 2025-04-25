@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Keyword Search</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body class="search-page">
+    <a href="/" class="home-link">
+        <img src="/static/images/icon.jpg" alt="Home" class="home-icon">
+    </a>
+    <div class="buttons">
+        <a href="/network" class="btn">Explore Networks</a>
+    </div>
+    <div class="container">
+        <h1>Search for Keywords</h1>
+        <div class="search-area">
+            <input type="text" id="searchInput" placeholder="Enter keywords..." />
+            <div class="search-buttons">
+                <button id="documentSearch">Search Documents</button>
+                <button id="speakerSearch">Search Speakers</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // JavaScript to handle button clicks
+        document.getElementById('documentSearch').addEventListener('click', () => {
+            const keywords = document.getElementById('searchInput').value;
+            if (keywords.trim() === "") {
+                alert("Please enter some keywords to search.");
+                return;
+            }
+            window.location.href = `/search/document?keywords=${encodeURIComponent(keywords)}`;
+        });
+
+        document.getElementById('speakerSearch').addEventListener('click', () => {
+            const keywords = document.getElementById('searchInput').value;
+            if (keywords.trim() === "") {
+                alert("Please enter some keywords to search.");
+                return;
+            }
+            window.location.href = `/search/speaker?keywords=${encodeURIComponent(keywords)}`;
+        });
+    </script>
+</body>
+</html>

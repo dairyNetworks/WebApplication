@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Stakeholder Sentiment Analysis</title>
+  <link rel="stylesheet" href="/static/style.css" />
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"/>
+  <script src="https://d3js.org/d3.v7.min.js"></script>
+  <style>
+        table {
+            width: 95%;
+            margin: 20px auto;
+            border-collapse: collapse;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            padding: 5rem;
+        }
+
+        thead {
+            background-color: rgba(255, 255, 255, 0.5);
+            backdrop-filter: blur(10px);
+        }
+
+        th, td {
+            padding: 15px;
+            text-align: center;
+            font-size: 16px;
+            text-align: justify;
+        }
+
+        th {
+            color: #555;
+            font-weight: bold;
+            text-transform: uppercase;
+            border-bottom: 2px solid #ddd;
+            text-align: center;
+            font-size: 15px;
+        }
+
+        tbody tr:nth-child(even) {
+            background-color: rgba(255, 255, 255, 0.7);
+        }
+
+        tbody tr:nth-child(odd) {
+            background-color: rgba(255, 255, 255, 0.9);
+        }
+
+        tbody tr:hover {
+            background-color: rgba(200, 230, 255, 0.9);
+        }
+
+        td {
+            color: #333;
+            font-size: 14px;
+            text-align: justify;
+        }
+
+        .highlight {
+            background-color: yellow;
+            font-weight: bold;
+        }
+    </style>
+</head>
+
+<body>
+  <a href="/" class="home-link">
+    <img src="/static/images/icon.jpg" alt="Home" class="home-icon" />
+  </a>
+  <div class="buttons">
+    <a href="/stakeholdermapping" class="btn">Stakeholder Mapping</a>
+    <a href="/actionquery" class="btn">Action Plan</a>
+  </div>
+  <div class="networkquerysection1">
+    <form id="tableForm">
+      <label for="query">Search Stakeholder Sentiment</label>
+      <select id="query" name="query">
+        <option value="car">What are the responses of stakeholders regarding carbon in dairy?</option>
+        <option value="wat">What are the responses of stakeholders regarding water in dairy?</option>
+        <option value="liv">What are the responses of stakeholders regarding livelihood in dairy?</option>
+      </select>
+  
+      <div class="button-row">
+        <button type="button" onclick="fetchCountStats()">View Count</button>
+      </div>
+    </form>
+  </div>
+  
+  <div class="networkquerysection2" id="graph-container" style="width: 100%; height: 600px; margin-top: 20px;">
+
+    <script>
+        function fetchCountStats() {
+            const query = document.getElementById("query").value;
+
+            const fileMap = {
+                car: {
+                bar: "/static/data/carbon_bar_chart.csv",
+                donut: "/static/data/carbon_donut.csv"
+                },
+                wat: {
+                bar: "/static/data/water_bar_chart.csv",
+                donut: "/static/data/water_donut.csv"
+                },
+                liv: {
+                bar: "/static/data/live_bar_chart.csv",
+                donut: "/static/data/live_donut.csv"
+                }
+            };
+
+            const barCsv = fileMap[query].bar;
+            const donutCsv = fileMap[query].donut;
+
+            d3.select("#graph-container").html(""); // Clear previous
+
+            Promise.all([
+                d3.csv(barCsv, d3.autoType),
+                d3.csv(donutCsv, d3.autoType)
+            ]).then(([barData, donutData]) => {
+                barData.sort((a, b) => b.Support - a.Support);
+                renderDonutChart(donutData);
+                renderGroupedBarChart(barData);
+                renderCategoryTable(barData, query);
+            }).catch(error => {
+                console.error("Error loading CSV files:", error);
+                d3.select("#graph-container").html("<p>Error loading data</p>");
+            });
+            }
+
+        function renderDonutChart(data) {
+          const width = 400, height = 400, margin = 40;
+          const radius = Math.min(width, height) / 2 - margin;
+        
+          const svg = d3.select("#graph-container")
+            .append("svg")
+            .attr("width", width)
+            .attr("height", height)
+            .append("g")
+            .attr("transform", `translate(${width / 2},${height / 2})`);
+        
+          const color = d3.scaleOrdinal()
+            .domain(data.map(d => d.Sentiment))
+            .range(["#afd69b", "#ececa3", "#db605d"]);
+        
+          const pie = d3.pie()
+            .value(d => d.count);
+          const data_ready = pie(data);
+        
+          svg.selectAll('path')
+            .data(data_ready)
+            .join('path')
+            .attr('d', d3.arc()
+              .innerRadius(100)
+              .outerRadius(radius))
+            .attr('fill', d => color(d.data.Sentiment))
+            .attr("stroke", "#fff")
+            .style("stroke-width", "2px");
+        
+          svg.selectAll("text")
+            .data(data_ready)
+            .enter()
+            .append("text")
+            .text(d => `${d.data.Sentiment} (${d.data.count}%)`)
+            .attr("transform", d => {
+              const pos = d3.arc().innerRadius(100).outerRadius(radius).centroid(d);
+              return `translate(${pos[0]},${pos[1]})`;
+            })
+            .style("text-anchor", "middle")
+            .style("font-size", "12px");
+        }
+        
+        function renderGroupedBarChart(data) {
+          const sentiments = ["Neutral", "Oppose", "Support"];
+          const margin = {top: 20, right: 20, bottom: 100, left: 60},
+                width = 800 - margin.left - margin.right,
+                height = 400 - margin.top - margin.bottom;
+        
+          const svg = d3.select("#graph-container")
+            .append("svg")
+            .attr("width", width + margin.left + margin.right)
+            .attr("height", height + margin.top + margin.bottom)
+            .append("g")
+            .attr("transform", `translate(${margin.left},${margin.top})`);
+        
+          const x0 = d3.scaleBand()
+            .domain(data.map(d => d.Category))
+            .range([0, width])
+            .padding(0.2);
+        
+          const x1 = d3.scaleBand()
+            .domain(sentiments)
+            .range([0, x0.bandwidth()])
+            .padding(0.05);
+        
+          const y = d3.scaleLinear()
+            .domain([0, d3.max(data, d => Math.max(d.Neutral || 0, d.Oppose || 0, d.Support || 0))])
+            .nice()
+            .range([height, 0]);
+        
+          const color = d3.scaleOrdinal()
+            .domain(sentiments)
+            .range(["#ececa3", "#db605d", "#afd69b"]);
+        
+          svg.append("g")
+            .selectAll("g")
+            .data(data)
+            .join("g")
+            .attr("transform", d => `translate(${x0(d.Category)},0)`)
+            .selectAll("rect")
+            .data(d => sentiments.map(sentiment => ({key: sentiment, value: d[sentiment]})))
+            .join("rect")
+            .attr("x", d => x1(d.key))
+            .attr("y", d => y(d.value))
+            .attr("width", x1.bandwidth())
+            .attr("height", d => height - y(d.value))
+            .attr("fill", d => color(d.key));
+        
+          svg.append("g")
+            .attr("transform", `translate(0,${height})`)
+            .call(d3.axisBottom(x0))
+            .selectAll("text")
+            .attr("transform", "rotate(45)")
+            .style("text-anchor", "start");
+        
+          svg.append("g")
+            .call(d3.axisLeft(y));
+        
+          const legend = svg.append("g")
+            .attr("transform", `translate(${width - 100},0)`);
+        
+          sentiments.forEach((sentiment, i) => {
+            legend.append("rect")
+              .attr("x", 0)
+              .attr("y", i * 20)
+              .attr("width", 12)
+              .attr("height", 12)
+              .attr("fill", color(sentiment));
+        
+            legend.append("text")
+              .attr("x", 20)
+              .attr("y", i * 20 + 10)
+              .text(sentiment)
+              .attr("alignment-baseline", "middle");
+          });
+        }
+        function renderCategoryTable(data, query) {
+            const uniqueCategories = [...new Set(data.map(d => d.Category))];
+            const container = d3.select("#table-container");
+            container.html("");  // Clear existing
+            const table = container.append("table");
+
+            const thead = table.append("thead").append("tr");
+            thead.append("th").text("Category");
+            thead.append("th").text("Support");
+            thead.append("th").text("Oppose");
+            thead.append("th").text("Neutral");
+
+            const tbody = table.append("tbody");
+
+            uniqueCategories.forEach(category => {
+                const row = tbody.append("tr");
+                row.append("td").text(category);
+
+                ["Support", "Oppose", "Neutral"].forEach(sentiment => {
+                    row.append("td")
+                        .append("a")
+                        .attr("href", `/speakersentiment.html?query=${query}&category=${encodeURIComponent(category)}&sentiment=${sentiment}`)
+                        .attr("class", "btn btn-sm")
+                        .style("background-color", getCustomColor(sentiment))
+                        .style("color", "#000")
+                        .style("font-weight", "bold")
+                        .text(sentiment);
+                });
+            });
+
+            function getCustomColor(sentiment) {
+                switch(sentiment) {
+                    case "Support": return "#afd69b"; // green
+                    case "Oppose": return "#db605d";  // red
+                    case "Neutral": return "#ececa3"; // yellow
+                    default: return "#ccc";
+                }
+            }
+        }
+        </script>
+        
+
+  </div>
+
+
+  <div id="table-container" style="margin-bottom: 20px;"></div>
+
+</body>
+</html>

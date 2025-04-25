@@ -1,0 +1,14 @@
+        MATCH (water:WATER_SENTIMENT_Topic {name: 'water'})-[:WATER_SENTIMENT_HAS_LABEL]->(label:WATER_SENTIMENT_Label)
+        MATCH (label)-[:WATER_SENTIMENT_HAS_CATEGORY]->(category:WATER_SENTIMENT_Category)
+        MATCH (label)-[:WATER_SENTIMENT_HAS_THOUGHT]->(thought:WATER_SENTIMENT_Thought)
+        MATCH (thought)-[:WATER_SENTIMENT_HAS_SENTIMENT]->(sentiment:WATER_SENTIMENT_Sentiment)
+        WHERE category.name = $category AND sentiment.type = $sentiment
+
+        MATCH (label)-[:WATER_SENTIMENT_HAS_ORGANISATION]->(org:WATER_SENTIMENT_Organisation)
+        MATCH (label)-[:WATER_SENTIMENT_HAS_DESIGNATION]->(desig:WATER_SENTIMENT_Designation)
+
+        RETURN DISTINCT
+            id(water) AS id_c, water.name AS label_c, 'Topic' AS type_c,
+            id(label) AS id_l, label.name AS label_l, 'Label' AS type_l,
+            id(org) AS id_o, org.name AS label_o, 'Organisation' AS type_o,
+            id(desig) AS id_d, desig.name AS label_d, 'Designation' AS type_d
