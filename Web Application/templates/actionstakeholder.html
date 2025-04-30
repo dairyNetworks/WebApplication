@@ -61,20 +61,20 @@
   <div class="buttons">
     <a href="/stakeholdermapping" class="btn">Stakeholder Mapping</a>
     <a href="/sentimentstats" class="btn">Sentiment Analysis</a>
+    <a href="/actionquery" class="btn">Action Plans by Actions</a>
   </div>
   <div class="networkquerysection1">
     <form id="tableForm">
-      <label for="query">Search Action Plans for Actions</label>
+      <label for="query">Search Action Plans for Stakeholders</label>
       <select id="query" name="query">
-        <option value="car">What targets does government have regarding carbon in dairy?</option>
-        <option value="wat">What targets does government have regarding water in dairy?</option>
-        <option value="liv">What targets does government have regarding livelihood in dairy?</option>
+        <option value="car">What stakeholders are linked with actions regarding carbon in dairy?</option>
+        <option value="wat">What stakeholders are linked with actions regarding regarding water in dairy?</option>
+        <option value="liv">What stakeholders are linked with actions regarding regarding livelihood in dairy?</option>
       </select>
   
       <div class="button-row">
         <button type="button" onclick="fetchActionTableData()">View Action Plans</button>
         <button type="button" onclick="fetchFVTableData()">View Food Vision</button>
-        <button type="button" onclick="fetchFVRTableData()">View Food Vision Report</button>
         <button type="button" onclick="fetchFWTableData()">View Food Wise</button>
       </div>
     </form>
@@ -88,7 +88,7 @@
       const selectedQuery = document.getElementById('query').value;
 
       try {
-        const response = await fetch(`/get_action_table?query=${selectedQuery}`);
+        const response = await fetch(`/get_actionstakeholder_table?query=${selectedQuery}`);
         const data = await response.json();
 
         if (data.table && data.table.length > 0) {
@@ -105,7 +105,7 @@
       const selectedQuery = document.getElementById('query').value;
 
       try {
-        const response = await fetch(`/get_fv_table?query=${selectedQuery}`);
+        const response = await fetch(`/get_fvstakeholder_table?query=${selectedQuery}`);
         const data = await response.json();
 
         if (data.table && data.table.length > 0) {
@@ -118,28 +118,11 @@
       }
     }
 
-    async function fetchFVRTableData() {
-      const selectedQuery = document.getElementById('query').value;
-
-      try {
-        const response = await fetch(`/get_fvr_table?query=${selectedQuery}`);
-        const data = await response.json();
-
-        if (data.table && data.table.length > 0) {
-          renderFVRTable(data.table);
-        } else {
-          document.getElementById("table-container").innerHTML = "<p>No data available for this query.</p>";
-        }
-      } catch (error) {
-        console.error("Error fetching table data:", error);
-      }
-    }
-
     async function fetchFWTableData() {
       const selectedQuery = document.getElementById('query').value;
 
       try {
-        const response = await fetch(`/get_fw_table?query=${selectedQuery}`);
+        const response = await fetch(`/get_fwstakeholder_table?query=${selectedQuery}`);
         const data = await response.json();
 
         if (data.table && data.table.length > 0) {
@@ -190,19 +173,19 @@
         // Create action button
         const actionTd = document.createElement("td");
 
-        const fileName = row["Action Plan File"];
-        const action = row["Action"];
+        const fileName = row["File Name"];
+        const formalStakeholder = row["Formal Stakeholder"];
         const selectedQuery = document.getElementById('query').value;
 
-        const stakeholderBtn = document.createElement("button");
-        stakeholderBtn.textContent = "Stakeholder";
-        stakeholderBtn.classList.add("btn", ".btn-custom-small");
-        stakeholderBtn.onclick = () => {
-          const url = `/actionplan.html?query=${encodeURIComponent(selectedQuery)}&file_name=${encodeURIComponent(fileName)}&action=${encodeURIComponent(action)}`;
+        const actionBtn = document.createElement("button");
+        actionBtn.textContent = "Action";
+        actionBtn.classList.add("btn", ".btn-custom-small");
+        actionBtn.onclick = () => {
+          const url = `/actionstakeholderlist.html?query=${encodeURIComponent(selectedQuery)}&formalStakeholder=${encodeURIComponent(formalStakeholder)}&fileName=${encodeURIComponent(fileName)}`;
           window.open(url, '_blank');
         };
 
-        actionTd.appendChild(stakeholderBtn);
+        actionTd.appendChild(actionBtn);
         tr.appendChild(actionTd);
         tbody.appendChild(tr);
       });
@@ -249,18 +232,18 @@
         // Create action button
         const actionTd = document.createElement("td");
 
-        const action = row["Action"];
+        const formalStakeholder =  row["Formal Stakeholder"];
         const selectedQuery = document.getElementById('query').value;
 
-        const stakeholderBtn = document.createElement("button");
-        stakeholderBtn.textContent = "Stakeholder";
-        stakeholderBtn.classList.add("btn", ".btn-custom-small");
-        stakeholderBtn.onclick = () => {
-          const url = `/foodvision.html?query=${encodeURIComponent(selectedQuery)}&action=${encodeURIComponent(action)}`;
+        const actionBtn = document.createElement("button");
+        actionBtn.textContent = "Action";
+        actionBtn.classList.add("btn", ".btn-custom-small");
+        actionBtn.onclick = () => {
+          const url = `/foodvisionstakeholder.html?query=${encodeURIComponent(selectedQuery)}&formalStakeholder=${encodeURIComponent(formalStakeholder)}`;
           window.open(url, '_blank');
         };
 
-        actionTd.appendChild(stakeholderBtn);
+        actionTd.appendChild(actionBtn);
         tr.appendChild(actionTd);
         tbody.appendChild(tr);
       });
@@ -269,7 +252,7 @@
       container.appendChild(table);
     }
 
-    function renderFVRTable(data) {
+    function renderFWTable(data, query) {
       const container = document.getElementById("table-container");
       container.innerHTML = "";
 
@@ -307,94 +290,19 @@
         // Create action button
         const actionTd = document.createElement("td");
 
-        const action = row["Action"];
+        const formalStakeholder =  row["Formal Stakeholder"];
         const selectedQuery = document.getElementById('query').value;
 
-        const stakeholderBtn = document.createElement("button");
-        stakeholderBtn.textContent = "Stakeholder";
-        stakeholderBtn.classList.add("btn", "btn-custom-small");
-        stakeholderBtn.onclick = () => {
-          const url = `/foodvisionreportstake.html?query=${encodeURIComponent(selectedQuery)}&action=${encodeURIComponent(action)}`;
+        const actionBtn = document.createElement("button");
+        actionBtn.textContent = "Action";
+        actionBtn.classList.add("btn", ".btn-custom-small");
+        actionBtn.onclick = () => {
+          const url = `/foodwisestakeholder.html?query=${encodeURIComponent(selectedQuery)}&formalStakeholder=${encodeURIComponent(formalStakeholder)}`;
           window.open(url, '_blank');
         };
 
-        const reportBtn = document.createElement("button");
-        reportBtn.textContent = "Report";
-        reportBtn.classList.add("btn", "btn-custom-small");
-        reportBtn.onclick = () => {
-          const url = `/foodvisionreport.html?query=${encodeURIComponent(selectedQuery)}&action=${encodeURIComponent(action)}`;
-          window.open(url, '_blank');
-        };
-
-        actionTd.appendChild(stakeholderBtn);
-        actionTd.appendChild(reportBtn);
+        actionTd.appendChild(actionBtn);
         tr.appendChild(actionTd);
-        tbody.appendChild(tr);
-      });
-
-      table.appendChild(tbody);
-      container.appendChild(table);
-    }
-
-    function renderFWTable(data, query) {
-      const container = document.getElementById("table-container");
-      container.innerHTML = "";
-
-      if (!data || data.length === 0) {
-        container.innerHTML = "<p>No data available.</p>";
-        return;
-      }
-
-      const table = document.createElement("table");
-      table.classList.add("table", "table-striped", "table-hover");
-
-      const headers = Object.keys(data[0]);
-      const thead = document.createElement("thead");
-      const headerRow = document.createElement("tr");
-
-      headers.forEach(header => {
-        const th = document.createElement("th");
-        th.textContent = header;
-        headerRow.appendChild(th);
-      });
-
-      // Add extra column for actions
-      const actionTh = document.createElement("th");
-      actionTh.textContent = "Search";
-      headerRow.appendChild(actionTh);
-
-      thead.appendChild(headerRow);
-      table.appendChild(thead);
-
-      const tbody = document.createElement("tbody");
-      data.forEach(row => {
-        const tr = document.createElement("tr");
-
-        headers.forEach(header => {
-          const td = document.createElement("td");
-          td.textContent = row[header];
-          tr.appendChild(td);
-        });
-
-        // Create action buttons
-        const actionTd = document.createElement("td");
-
-        const identifier = encodeURIComponent(row["Identifier"]);
-        const queryParam = encodeURIComponent(query);
-
-        const stakeholderBtn = `
-          <a 
-            href="/foodwise.html?query=${queryParam}&identifier=${identifier}" 
-            class="btn btn-custom-small" 
-            target="_blank"
-          >
-            Stakeholder
-          </a>
-        `;
-
-        actionTd.innerHTML = stakeholderBtn;
-        tr.appendChild(actionTd);
-
         tbody.appendChild(tr);
       });
 
