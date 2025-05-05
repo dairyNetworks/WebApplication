@@ -70,7 +70,8 @@
   </a>
   <div class="buttons">
     <a href="/stakeholdermapping" class="btn">Stakeholder Mapping</a>
-    <a href="/actionquery" class="btn">Action Plan</a>
+    <a href="/actionstakeholder" class="btn">Action Plans for Stakeholders</a>
+    <a href="/actionquery" class="btn">Action Plans by Actions</a>
   </div>
   <div class="networkquerysection1">
     <form id="tableForm">
@@ -118,7 +119,7 @@
                 d3.csv(donutCsv, d3.autoType)
             ]).then(([barData, donutData]) => {
                 barData.sort((a, b) => b.Support - a.Support);
-                renderDonutChart(donutData);
+                renderStackedBarChart(donutData);
                 renderGroupedBarChart(barData);
                 renderCategoryTable(barData, query);
             }).catch(error => {
@@ -126,49 +127,83 @@
                 d3.select("#graph-container").html("<p>Error loading data</p>");
             });
             }
+            function renderStackedBarChart(data) {
+              const margin = { top: 20, right: 20, bottom: 50, left: 60 },
+                    width = 500 - margin.left - margin.right,
+                    height = 400 - margin.top - margin.bottom;
 
-        function renderDonutChart(data) {
-          const width = 400, height = 400, margin = 40;
-          const radius = Math.min(width, height) / 2 - margin;
-        
-          const svg = d3.select("#graph-container")
-            .append("svg")
-            .attr("width", width)
-            .attr("height", height)
-            .append("g")
-            .attr("transform", `translate(${width / 2},${height / 2})`);
-        
-          const color = d3.scaleOrdinal()
-            .domain(data.map(d => d.Sentiment))
-            .range(["#afd69b", "#ececa3", "#db605d"]);
-        
-          const pie = d3.pie()
-            .value(d => d.count);
-          const data_ready = pie(data);
-        
-          svg.selectAll('path')
-            .data(data_ready)
-            .join('path')
-            .attr('d', d3.arc()
-              .innerRadius(100)
-              .outerRadius(radius))
-            .attr('fill', d => color(d.data.Sentiment))
-            .attr("stroke", "#fff")
-            .style("stroke-width", "2px");
-        
-          svg.selectAll("text")
-            .data(data_ready)
-            .enter()
-            .append("text")
-            .text(d => `${d.data.Sentiment} (${d.data.count}%)`)
-            .attr("transform", d => {
-              const pos = d3.arc().innerRadius(100).outerRadius(radius).centroid(d);
-              return `translate(${pos[0]},${pos[1]})`;
-            })
-            .style("text-anchor", "middle")
-            .style("font-size", "12px");
-        }
-        
+              const svg = d3.select("#graph-container")
+                .append("svg")
+                .attr("width", width + margin.left + margin.right)
+                .attr("height", height + margin.top + margin.bottom)
+                .append("g")
+                .attr("transform", `translate(${margin.left},${margin.top})`);
+
+              // Data format expected: [{ Sentiment: "Support", count: 30 }, ...]
+              const x = d3.scaleBand()
+                .domain(["Sentiment"])
+                .range([0, width])
+                .padding(0.2);
+
+              const y = d3.scaleLinear()
+                .domain([0, d3.sum(data, d => d.count)])
+                .nice()
+                .range([height, 0]);
+
+              const color = d3.scaleOrdinal()
+                .domain(data.map(d => d.Sentiment))
+                .range(["#afd69b", "#ececa3", "#db605d"]);
+
+              let cumulative = 0;
+              svg.selectAll("rect")
+                .data(data)
+                .join("rect")
+                .attr("x", d => x("Sentiment"))
+                .attr("y", d => {
+                  const yVal = y(cumulative + d.count);
+                  cumulative += d.count;
+                  return yVal;
+                })
+                .attr("height", d => height - y(d.count))
+                .attr("width", x.bandwidth())
+                .attr("fill", d => color(d.Sentiment));
+
+              // Reset for text labels
+              cumulative = 0;
+              svg.selectAll("text")
+                .data(data)
+                .join("text")
+                .attr("x", d => x("Sentiment") + x.bandwidth() / 2)
+                .attr("y", d => {
+                  const yVal = y(cumulative + d.count / 2);
+                  cumulative += d.count;
+                  return yVal;
+                })
+                .attr("dy", "0.35em")
+                .attr("text-anchor", "middle")
+                .style("font-size", "12px")
+                .text(d => `${d.Sentiment} (${d.count})`);
+
+              svg.append("g")
+                .attr("transform", `translate(0,${height})`)
+                .call(d3.axisBottom(x).tickSize(0))
+                .selectAll("text")
+                .attr("transform", "rotate(0)");
+
+              svg.append("g")
+                .call(d3.axisLeft(y));
+
+              svg.append("text")
+                .attr("transform", "rotate(-90)")
+                .attr("y", -margin.left + 35)
+                .attr("x", -height / 2)
+                .attr("dy", "-1.5em")
+                .style("text-anchor", "middle")
+                .style("font-size", "14px")
+                .text("Stakeholder Proportion (%)");
+
+            }
+
         function renderGroupedBarChart(data) {
           const sentiments = ["Neutral", "Oppose", "Support"];
           const margin = {top: 20, right: 20, bottom: 100, left: 60},
@@ -243,45 +278,80 @@
               .attr("alignment-baseline", "middle");
           });
         }
+
         function renderCategoryTable(data, query) {
-            const uniqueCategories = [...new Set(data.map(d => d.Category))];
-            const container = d3.select("#table-container");
-            container.html("");  // Clear existing
-            const table = container.append("table");
+          const container = d3.select("#table-container");
+          container.html("");  // Clear existing
 
-            const thead = table.append("thead").append("tr");
-            thead.append("th").text("Category");
-            thead.append("th").text("Support");
-            thead.append("th").text("Oppose");
-            thead.append("th").text("Neutral");
+          const table = container.append("table")
+              .attr("class", "sentiment-table");
 
-            const tbody = table.append("tbody");
+          const thead = table.append("thead").append("tr");
+          thead.append("th").text("Category");
+          thead.append("th").text("Sentiment Distribution");
 
-            uniqueCategories.forEach(category => {
-                const row = tbody.append("tr");
-                row.append("td").text(category);
+          const tbody = table.append("tbody");
 
-                ["Support", "Oppose", "Neutral"].forEach(sentiment => {
-                    row.append("td")
-                        .append("a")
-                        .attr("href", `/speakersentiment.html?query=${query}&category=${encodeURIComponent(category)}&sentiment=${sentiment}`)
-                        .attr("class", "btn btn-sm")
-                        .style("background-color", getCustomColor(sentiment))
-                        .style("color", "#000")
-                        .style("font-weight", "bold")
-                        .text(sentiment);
-                });
-            });
+          data.forEach(d => {
+              const total = d.Support + d.Oppose + d.Neutral;
+              const row = tbody.append("tr");
+              row.append("td").text(d.Category);
 
-            function getCustomColor(sentiment) {
-                switch(sentiment) {
-                    case "Support": return "#afd69b"; // green
-                    case "Oppose": return "#db605d";  // red
-                    case "Neutral": return "#ececa3"; // yellow
-                    default: return "#ccc";
-                }
-            }
-        }
+              const barCell = row.append("td")
+                  .style("position", "relative");
+
+              // Create a wrapper div with gradient background
+              const bar = barCell.append("div")
+                  .style("position", "relative")
+                  .style("height", "25px")
+                  .style("width", "100%")
+                  .style("border", "1px solid #ccc")
+                  .style("border-radius", "5px")
+                  .style("overflow", "hidden")
+                  .style("background", () => {
+                      const supportPct = (d.Support / total) * 100;
+                      const opposePct = (d.Oppose / total) * 100;
+                      const neutralPct = 100 - supportPct - opposePct;
+
+                      return `linear-gradient(to right,
+                          #afd69b 0%, 
+                          #afd69b ${supportPct}%,
+                          #db605d ${supportPct}%,
+                          #db605d ${supportPct + opposePct}%,
+                          #ececa3 ${supportPct + opposePct}%,
+                          #ececa3 100%)`;
+                  });
+
+              // Define clickable transparent overlays for each sentiment
+              const sentiments = [
+                  { label: "Support", count: d.Support, color: "#afd69b" },
+                  { label: "Oppose", count: d.Oppose, color: "#db605d" },
+                  { label: "Neutral", count: d.Neutral, color: "#ececa3" }
+              ];
+
+              let offset = 0;
+
+              sentiments.forEach(s => {
+                  const widthPct = (s.count / total) * 100;
+
+                  bar.append("div")
+                      .style("position", "absolute")
+                      .style("left", `${offset}%`)
+                      .style("top", "0")
+                      .style("width", `${widthPct}%`)
+                      .style("height", "100%")
+                      .style("cursor", "pointer")
+                      .attr("title", `${s.label}: ${s.count}`)
+                      .on("click", () => {
+                          const url = `/speakersentiment.html?query=${query}&category=${encodeURIComponent(d.Category)}&sentiment=${s.label}`;
+                          window.open(url, "_blank");
+                      });
+
+                  offset += widthPct;
+              });
+          });
+      }
+
         </script>
         
 
