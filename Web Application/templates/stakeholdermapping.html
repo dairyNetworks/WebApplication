@@ -55,24 +55,31 @@
   </style>
 </head>
 <body>
-  <a href="/" class="home-link">
-    <img src="/static/images/icon.jpg" alt="Home" class="home-icon" />
+  <a id="homeLink" href="/index2" class="home-link">
+            <img src="/static/images/icon.jpg" alt="Home" class="home-icon">
   </a>
   <div class="buttons">
-    <a href="/stakeholdermapping" class="btn">Stakeholder Mapping</a>
-    <a href="/sentimentstats" class="btn">Sentiment Analysis</a>
+    <a id="btnSentimentStats" href="/sentimentstats" class="btn">Sentiment Analysis</a>
+    <a id="btnActionStakeholder" href="/actionstakeholder" class="btn">Action Plans for Stakeholders</a>
+    <a id="btnActionQuery" href="/actionquery" class="btn">Action Plans by Actions</a>
+    <a id="guideLink" href="/manual" target="_blank" class="guide-link">
+      <img src="/static/images/user guide2.jpg" alt="User Guide" class="guide-icon">
+    </a>
+    <a href="/" class="login-image-button">
+      <img src="/static/images/user login.jpg" alt="Login" class="login-icon">
+    </a>
   </div>
   <div class="networkquerysection1">
     <form id="tableForm">
       <label for="query">Document Name</label>
       <select id="query" name="query">
-        <option value="D1">Ireland’s National Inventory Report</option>
+        <!--<option value="D1">Ireland’s National Inventory Report</option> -->
         <option value="D2">Ireland’s Climate Change Assessment Volume 2</option>
         <option value="D3">Report, Climate Change: A Cross-Party Consensus for Action</option>
         <option value="D4">Climate Change and Sustainability in the Agriculture and Food Sectors</option>
         <option value="D5">Environmental Protection Agency – Ireland's Environment – An Integrated Assessment 2020</option>
         <option value="D6">Compliance with the Nitrates Directive: Implications for Ireland</option>
-        <option value="D7">Ireland’s Climate Change Assessment Volume 3</option>
+        <!--<option value="D7">Ireland’s Climate Change Assessment Volume 3</option> -->
         <option value="D8">Our Rural Future - Rural Development Policy 2021 - 2025</option>
       </select>
   
@@ -86,11 +93,22 @@
   <div id="table-container" style="margin-bottom: 20px;"></div>
 
   <script>
+    const urlParams = new URLSearchParams(window.location.search);
+    const accessLevel = urlParams.get("access");
+
+    if (accessLevel) {
+        document.getElementById("btnActionStakeholder").href = `/actionstakeholder?access=${accessLevel}`;
+        document.getElementById("btnSentimentStats").href = `/sentimentstats?access=${accessLevel}`;
+        document.getElementById("btnActionQuery").href = `/actionquery?access=${accessLevel}`;
+    }
+
+    if (homeLink) { homeLink.href = `/index2?access=${accessLevel}`;}
+
     async function fetchPrimaryStakeholder() {
       const query = document.getElementById('query').value;
 
       try {
-        const response = await fetch(`/get_primary_stakeholders?query=${encodeURIComponent(query)}`);
+        const response = await fetch(`/get_primary_stakeholders?query=${encodeURIComponent(query)}&access=${encodeURIComponent(accessLevel || "")}`);
         const data = await response.json();
         console.log("Received data:", data);
 
@@ -141,7 +159,7 @@
             btn.textContent = "View Stakeholder Map";
             btn.classList.add("btn", ".btn-custom-small");
             btn.onclick = () => {
-            const url = `/secondarystakeholder.html?query=${encodeURIComponent(selectedQuery)}&primaryStakeholder=${encodeURIComponent(stakeholder)}`;
+            const url = `/secondarystakeholder.html?query=${encodeURIComponent(selectedQuery)}&primaryStakeholder=${encodeURIComponent(stakeholder)}&access=${encodeURIComponent(accessLevel || "")}`;
             window.open(url, "_blank");
             };
 

@@ -55,12 +55,19 @@
   </style>
 </head>
 <body>
-  <a href="/" class="home-link">
-    <img src="/static/images/icon.jpg" alt="Home" class="home-icon" />
-  </a>
+    <a id="homeLink" href="/index2" class="home-link">
+            <img src="/static/images/icon.jpg" alt="Home" class="home-icon">
+    </a>
   <div class="buttons">
-    <a href="/stakeholdermapping" class="btn">Stakeholder Mapping</a>
-    <a href="/sentimentstats" class="btn">Sentiment Analysis</a>
+    <a id ="btnStakeholderMapping" href="/stakeholdermapping" class="btn">Stakeholder Mapping</a>
+    <a id="btnSentimentStats" href="/sentimentstats" class="btn">Sentiment Analysis</a>
+    <a id="btnActionStakeholder" href="/actionstakeholder" class="btn">Action Plans for Stakeholders</a>
+    <a id="guideLink" href="/manual" target="_blank" class="guide-link">
+      <img src="/static/images/user guide2.jpg" alt="User Guide" class="guide-icon">
+    </a>
+    <a href="/" class="login-image-button">
+      <img src="/static/images/user login.jpg" alt="Login" class="login-icon">
+    </a>
   </div>
   <div class="networkquerysection1">
     <form id="tableForm">
@@ -84,11 +91,19 @@
   <div id="table-container" style="margin-bottom: 20px;"></div>
 
   <script>
+    const urlParams = new URLSearchParams(window.location.search);
+          const accessLevel = urlParams.get("access");
+          if (accessLevel) {
+              document.getElementById("btnActionStakeholder").href = `/actionstakeholder?access=${accessLevel}`;
+              document.getElementById("btnStakeholderMapping").href = `/stakeholdermapping?access=${accessLevel}`;
+              document.getElementById("btnSentimentStats").href = `/sentimentstats?access=${accessLevel}`;
+          }
+          if (homeLink) { homeLink.href = `/index2?access=${accessLevel}`;}
     async function fetchActionTableData() {
       const selectedQuery = document.getElementById('query').value;
 
       try {
-        const response = await fetch(`/get_action_table?query=${selectedQuery}`);
+        const response = await fetch(`/get_action_table?query=${selectedQuery}&access=${accessLevel}`);
         const data = await response.json();
 
         if (data.table && data.table.length > 0) {
@@ -105,7 +120,7 @@
       const selectedQuery = document.getElementById('query').value;
 
       try {
-        const response = await fetch(`/get_fv_table?query=${selectedQuery}`);
+        const response = await fetch(`/get_fv_table?query=${selectedQuery}&access=${accessLevel}`);
         const data = await response.json();
 
         if (data.table && data.table.length > 0) {
@@ -122,7 +137,7 @@
       const selectedQuery = document.getElementById('query').value;
 
       try {
-        const response = await fetch(`/get_fvr_table?query=${selectedQuery}`);
+        const response = await fetch(`/get_fvr_table?query=${selectedQuery}&access=${accessLevel}`);
         const data = await response.json();
 
         if (data.table && data.table.length > 0) {
@@ -139,7 +154,7 @@
       const selectedQuery = document.getElementById('query').value;
 
       try {
-        const response = await fetch(`/get_fw_table?query=${selectedQuery}`);
+        const response = await fetch(`/get_fw_table?query=${selectedQuery}&access=${accessLevel}`);
         const data = await response.json();
 
         if (data.table && data.table.length > 0) {
@@ -198,7 +213,7 @@
         stakeholderBtn.textContent = "Stakeholder";
         stakeholderBtn.classList.add("btn", ".btn-custom-small");
         stakeholderBtn.onclick = () => {
-          const url = `/actionplan.html?query=${encodeURIComponent(selectedQuery)}&file_name=${encodeURIComponent(fileName)}&action=${encodeURIComponent(action)}`;
+          const url = `/actionplan.html?query=${encodeURIComponent(selectedQuery)}&file_name=${encodeURIComponent(fileName)}&action=${encodeURIComponent(action)}&access=${encodeURIComponent(accessLevel)}`;
           window.open(url, '_blank');
         };
 
@@ -256,7 +271,7 @@
         stakeholderBtn.textContent = "Stakeholder";
         stakeholderBtn.classList.add("btn", ".btn-custom-small");
         stakeholderBtn.onclick = () => {
-          const url = `/foodvision.html?query=${encodeURIComponent(selectedQuery)}&action=${encodeURIComponent(action)}`;
+          const url = `/foodvision.html?query=${encodeURIComponent(selectedQuery)}&action=${encodeURIComponent(action)}&access=${encodeURIComponent(accessLevel)}`;
           window.open(url, '_blank');
         };
 
@@ -314,7 +329,7 @@
         stakeholderBtn.textContent = "Stakeholder";
         stakeholderBtn.classList.add("btn", "btn-custom-small");
         stakeholderBtn.onclick = () => {
-          const url = `/foodvisionreportstake.html?query=${encodeURIComponent(selectedQuery)}&action=${encodeURIComponent(action)}`;
+          const url = `/foodvisionreportstake.html?query=${encodeURIComponent(selectedQuery)}&action=${encodeURIComponent(action)}&access=${encodeURIComponent(accessLevel)}`;
           window.open(url, '_blank');
         };
 
@@ -322,7 +337,7 @@
         reportBtn.textContent = "Report";
         reportBtn.classList.add("btn", "btn-custom-small");
         reportBtn.onclick = () => {
-          const url = `/foodvisionreport.html?query=${encodeURIComponent(selectedQuery)}&action=${encodeURIComponent(action)}`;
+          const url = `/foodvisionreport.html?query=${encodeURIComponent(selectedQuery)}&action=${encodeURIComponent(action)}&access=${encodeURIComponent(accessLevel)}`;
           window.open(url, '_blank');
         };
 
@@ -379,12 +394,13 @@
         // Create action buttons
         const actionTd = document.createElement("td");
 
-        const identifier = encodeURIComponent(row["Identifier"]);
+        const recommendation = encodeURIComponent(row["Recommendation"]);
+        const actionRecommendation = encodeURIComponent(row["Action"]);
         const queryParam = encodeURIComponent(query);
 
         const stakeholderBtn = `
           <a 
-            href="/foodwise.html?query=${queryParam}&identifier=${identifier}" 
+            href="/foodwise.html?query=${encodeURIComponent(queryParam)}&recommendation=${encodeURIComponent(recommendation)}&action=${encodeURIComponent(actionRecommendation)}&access=${encodeURIComponent(accessLevel)}" 
             class="btn btn-custom-small" 
             target="_blank"
           >

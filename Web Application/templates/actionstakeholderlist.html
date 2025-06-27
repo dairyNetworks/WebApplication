@@ -66,11 +66,11 @@
     </style>
 </head>
 <body>
-    <a href="/" class="home-link">
-        <img src="/static/images/icon.jpg" alt="Home" class="home-icon">
+    <a id="homeLink" href="/index2" class="home-link">
+            <img src="/static/images/icon.jpg" alt="Home" class="home-icon">
     </a>
     <div class="buttons">
-        <a href="/search" class="btn">Explore Documents</a>
+            <a id="docBtn" class="btn">Explore Documents</a>
     </div>
     
     <div class="networkquerysection2" id="graph-container" style="width: 100%; height: 600px; margin-top: 20px;">
@@ -79,14 +79,17 @@
             const urlParams = new URLSearchParams(window.location.search);
             const query = urlParams.get('query');
             const formalStakeholder = urlParams.get('formalStakeholder');
-      
+            const accessLevel = urlParams.get("access");
+
+            document.getElementById("docBtn").href = `/search?access=${accessLevel}`;
             console.log("Query:", query);
             console.log("formalStakeholder:", formalStakeholder);
 
-            
+            if (homeLink) {
+                homeLink.href = `/index2?access=${accessLevel}`;}
       
             // Fetch and render the table using the received parameters
-            fetch(`/get_actionstakeholder_plan?query=${query}&formalStakeholder=${formalStakeholder}`)
+            fetch(`/get_actionstakeholder_plan?query=${query}&formalStakeholder=${formalStakeholder}&access=${accessLevel}`)
                 .then(response => response.json())
                 .then(data => {
                     console.log("API Response Data:", data);  // For debugging
@@ -103,7 +106,7 @@
                     document.getElementById("table-container").innerHTML = "<p>Error loading data.</p>";
             });
 
-            fetch(`/get_actionstakeholder_plan_network?query=${query}&formalStakeholder=${formalStakeholder}`)
+            fetch(`/get_actionstakeholder_plan_network?query=${query}&formalStakeholder=${formalStakeholder}&access=${accessLevel}`)
                 .then(response => response.json())
                 .then(data => {
                     console.log("✅ Raw API Data:", data);
@@ -176,12 +179,16 @@
                     .attr("r", 20)
                     .attr("fill", d => {
                         switch (d.type) {
-                            case "Formal Stakeholder":
-                                return "#4a7ba6";
+                            case "File":
                             case "File Name":
+                                return "#4a7ba6";
+                            case "Short Action":
                                 return "#9799ba";
-                            case "Action":
+                            case "Label":
+                            case "Formal Stakeholder":
                                 return "#bc85a3";
+                            case "Category":
+                                return "#f5a623"; 
                             default:
                                 return "#cccccc";
                         }
@@ -194,7 +201,12 @@
                         .on("end", dragended));
 
                 // Tooltip on hover
-                node.append("title").text(d => d.label);
+                node.append("title").text(d => {
+                    if (d.type === "Short Action" && d.action) {
+                        return d.action; // Tooltip shows full Action
+                    }
+                    return d.label; // Fallback for other nodes
+                });
 
                 // Node labels
                 const nodeLabels = zoomGroup.append("g")
@@ -209,16 +221,16 @@
                     .style("fill", "#333");
 
                 // Link labels
-                const linkLabels = zoomGroup.append("g")
-                    .selectAll(".link-label")
-                    .data(graphData.links)
-                    .enter().append("text")
-                    .attr("class", "link-label")
-                    .attr("dx", 5)
-                    .attr("dy", ".35em")
-                    .text(d => d.type)
-                    .style("font-size", "10px")
-                    .style("fill", "#666");
+                //const linkLabels = zoomGroup.append("g")
+                  //  .selectAll(".link-label")
+                  //  .data(graphData.links)
+                  //  .enter().append("text")
+                  //  .attr("class", "link-label")
+                  //  .attr("dx", 5)
+                  //  .attr("dy", ".35em")
+                  //  .text(d => d.type)
+                  //  .style("font-size", "10px")
+                  //  .style("fill", "#666");
 
                 const simulation = d3.forceSimulation(graphData.nodes)
                     .force("link", d3.forceLink(graphData.links).id(d => d.id).distance(150))
@@ -240,9 +252,9 @@
                         .attr("x", d => d.x)
                         .attr("y", d => d.y);
 
-                    linkLabels
-                        .attr("x", d => (d.source.x + d.target.x) / 2)
-                        .attr("y", d => (d.source.y + d.target.y) / 2);
+                    //linkLabels
+                    //    .attr("x", d => (d.source.x + d.target.x) / 2)
+                     //   .attr("y", d => (d.source.y + d.target.y) / 2);
                 });
 
                 function dragstarted(event) {

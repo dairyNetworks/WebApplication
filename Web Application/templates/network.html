@@ -8,12 +8,18 @@
     <script src="https://d3js.org/d3.v7.min.js"></script>
 </head>
 <body>
-    <a href="/" class="home-link">
+    <a id="homeLink" href="/index2" class="home-link">
         <img src="/static/images/icon.jpg" alt="Home" class="home-icon">
     </a>
     <div class="buttons">
-        <a href="/search" class="btn">Explore Documents</a>
-    </div>
+            <a id="docBtn" class="btn">Explore Documents</a>
+            <a id="guideLink" href="/manual" target="_blank" class="guide-link">
+                <img src="/static/images/user guide2.jpg" alt="User Guide" class="guide-icon">
+            </a>
+            <a href="/" class="login-image-button">
+                <img src="/static/images/user login.jpg" alt="Login" class="login-icon">
+            </a>
+        </div>
     <div class="networksection1">
         <h2 class="headingnetwork1">What Does This Knowledge Graph Reveal?</h2>
         <p class="paragraphnetwork2">
@@ -22,11 +28,24 @@
             It’s not just data—it’s a story of collaboration, influence, and innovation.
         </p>
         <div class="buttonblack">
-            <a href="/networkfirst" class="btnblk">Discover more!</a>
+            <a id="networkFirstBtn" href="/networkfirst" class="btnblk">Discover more!</a>
         </div>
     </div>
     <div class="networksection2">
         <script>
+            const urlParams = new URLSearchParams(window.location.search);
+            const accessLevel = urlParams.get("access");
+
+            document.getElementById("docBtn").href = `/search?access=${accessLevel}`;
+            
+            if (homeLink) {
+                homeLink.href = `/index2?access=${accessLevel}`;
+            }
+            
+            const networkBtn = document.getElementById("networkFirstBtn");
+            if (networkBtn && accessLevel) {
+                networkBtn.href = `/networkfirst?access=${accessLevel}`;
+            }
             document.addEventListener("DOMContentLoaded", () => {
                 // Fetch data from the backend
                 fetch("/get_network")

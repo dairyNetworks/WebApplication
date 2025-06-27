@@ -53,11 +53,11 @@
     </style>
 </head>
 <body class="search-page">
-    <a href="/" class="home-link">
+    <a id="homeLink" href="/index2" class="home-link">
         <img src="/static/images/icon.jpg" alt="Home" class="home-icon">
     </a>
     <div class="buttons">
-        <a href="/search" class="btn">Back to Search</a>
+            <a id="docBtn" href="/search" class="btn">Back to Search</a>
     </div>
     <div class="result-container">
         <h1>Document Search Results for "{{ search_keywords }}"</h1>
@@ -84,4 +84,24 @@
         {% endif %}
     </div>
 </body>
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const urlParams = new URLSearchParams(window.location.search);
+        const accessLevel = urlParams.get("access");
+
+        if (accessLevel) {
+            const homeLink = document.getElementById("homeLink");
+            const docBtn = document.getElementById("docBtn");
+
+            if (homeLink) {
+                homeLink.href = `/index2?access=${accessLevel}`;
+            }
+
+            if (docBtn) {
+                docBtn.href = `/search?access=${accessLevel}`;
+            }
+        }
+    });
+</script>
+
 </html>

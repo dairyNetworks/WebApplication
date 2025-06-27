@@ -65,13 +65,19 @@
 </head>
 
 <body>
-  <a href="/" class="home-link">
-    <img src="/static/images/icon.jpg" alt="Home" class="home-icon" />
-  </a>
+  <a id="homeLink" href="/index2" class="home-link">
+            <img src="/static/images/icon.jpg" alt="Home" class="home-icon">
+    </a>
   <div class="buttons">
-    <a href="/stakeholdermapping" class="btn">Stakeholder Mapping</a>
-    <a href="/actionstakeholder" class="btn">Action Plans for Stakeholders</a>
-    <a href="/actionquery" class="btn">Action Plans by Actions</a>
+    <a id ="btnStakeholderMapping" href="/stakeholdermapping" class="btn">Stakeholder Mapping</a>
+    <a id="btnActionStakeholder" href="/actionstakeholder" class="btn">Action Plans for Stakeholders</a>
+    <a id="btnActionQuery" href="/actionquery" class="btn">Action Plans by Actions</a>
+    <a id="guideLink" href="/manual" target="_blank" class="guide-link">
+      <img src="/static/images/user guide2.jpg" alt="User Guide" class="guide-icon">
+    </a>
+    <a href="/" class="login-image-button">
+      <img src="/static/images/user login.jpg" alt="Login" class="login-icon">
+    </a>
   </div>
   <div class="networkquerysection1">
     <form id="tableForm">
@@ -91,42 +97,61 @@
   <div class="networkquerysection2" id="graph-container" style="width: 100%; height: 600px; margin-top: 20px;">
 
     <script>
-        function fetchCountStats() {
-            const query = document.getElementById("query").value;
+          const urlParams = new URLSearchParams(window.location.search);
+          const accessLevel = urlParams.get("access");
+          if (homeLink) { homeLink.href = `/index2?access=${accessLevel}`;}
+          if (accessLevel) {
+              document.getElementById("btnActionStakeholder").href = `/actionstakeholder?access=${accessLevel}`;
+              document.getElementById("btnStakeholderMapping").href = `/stakeholdermapping?access=${accessLevel}`;
+              document.getElementById("btnActionQuery").href = `/actionquery?access=${accessLevel}`;
+          }
 
-            const fileMap = {
-                car: {
-                bar: "/static/data/carbon_bar_chart.csv",
-                donut: "/static/data/carbon_donut.csv"
-                },
-                wat: {
-                bar: "/static/data/water_bar_chart.csv",
-                donut: "/static/data/water_donut.csv"
-                },
-                liv: {
-                bar: "/static/data/live_bar_chart.csv",
-                donut: "/static/data/live_donut.csv"
-                }
-            };
+            function fetchCountStats() {
+              const query = document.getElementById("query").value.trim();
+              console.log("Access Level:", accessLevel);
+              console.log("Query:", query);
 
-            const barCsv = fileMap[query].bar;
-            const donutCsv = fileMap[query].donut;
+              let fileMap = {};
 
-            d3.select("#graph-container").html(""); // Clear previous
+              if (accessLevel === 'levelone') {
+                  fileMap = {
+                      car: { bar: "/static/data/carbon_bar_chart.csv", donut: "/static/data/carbon_donut.csv" },
+                      wat: { bar: "/static/data/water_bar_chart.csv", donut: "/static/data/water_donut.csv" },
+                      liv: { bar: "/static/data/live_bar_chart.csv", donut: "/static/data/live_donut.csv" }
+                  };
+              } else if (accessLevel === 'leveltwo') {
+                  fileMap = {
+                      car: { bar: "/static/data/carbon_bar_chart2.csv", donut: "/static/data/carbon_donut2.csv" },
+                      wat: { bar: "/static/data/water_bar_chart2.csv", donut: "/static/data/water_donut2.csv" },
+                      liv: { bar: "/static/data/live_bar_chart2.csv", donut: "/static/data/live_donut2.csv" }
+                  };
+              }
 
-            Promise.all([
-                d3.csv(barCsv, d3.autoType),
-                d3.csv(donutCsv, d3.autoType)
-            ]).then(([barData, donutData]) => {
-                barData.sort((a, b) => b.Support - a.Support);
-                renderStackedBarChart(donutData);
-                renderGroupedBarChart(barData);
-                renderCategoryTable(barData, query);
-            }).catch(error => {
-                console.error("Error loading CSV files:", error);
-                d3.select("#graph-container").html("<p>Error loading data</p>");
-            });
-            }
+              if (!fileMap[query]) {
+                  console.error("Invalid query key:", query);
+                  d3.select("#graph-container").html("<p>Invalid topic selected. Please choose a valid one.</p>");
+                  return;
+              }
+
+              const barCsv = fileMap[query].bar;
+              const donutCsv = fileMap[query].donut;
+
+              d3.select("#graph-container").html(""); // Clear previous
+
+              Promise.all([
+                  d3.csv(barCsv, d3.autoType),
+                  d3.csv(donutCsv, d3.autoType)
+              ]).then(([barData, donutData]) => {
+                  barData.sort((a, b) => b.Support - a.Support);
+                  renderStackedBarChart(donutData);
+                  renderGroupedBarChart(barData);
+                  renderCategoryTable(barData, query);
+              }).catch(error => {
+                  console.error("Error loading CSV files:", error);
+                  d3.select("#graph-container").html("<p>Error loading data</p>");
+              });
+          }
+
             function renderStackedBarChart(data) {
               const margin = { top: 20, right: 20, bottom: 50, left: 60 },
                     width = 500 - margin.left - margin.right,
@@ -343,7 +368,7 @@
                       .style("cursor", "pointer")
                       .attr("title", `${s.label}: ${s.count}`)
                       .on("click", () => {
-                          const url = `/speakersentiment.html?query=${query}&category=${encodeURIComponent(d.Category)}&sentiment=${s.label}`;
+                          const url = `/speakersentiment.html?query=${query}&category=${encodeURIComponent(d.Category)}&sentiment=${s.label}&access=${accessLevel}`;
                           window.open(url, "_blank");
                       });
 

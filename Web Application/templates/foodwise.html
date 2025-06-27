@@ -66,11 +66,11 @@
     </style>
 </head>
 <body>
-    <a href="/" class="home-link">
-        <img src="/static/images/icon.jpg" alt="Home" class="home-icon">
+    <a id="homeLink" href="/index2" class="home-link">
+            <img src="/static/images/icon.jpg" alt="Home" class="home-icon">
     </a>
     <div class="buttons">
-        <a href="/search" class="btn">Explore Documents</a>
+            <a id="docBtn" class="btn">Explore Documents</a>
     </div>
     
     <div class="networkquerysection2" id="graph-container" style="width: 100%; height: 600px; margin-top: 20px;">
@@ -78,13 +78,16 @@
         <script>
             const urlParams = new URLSearchParams(window.location.search);
             const query = urlParams.get('query');
-            const identifier = urlParams.get('identifier');
-      
+            const recommendation = urlParams.get('recommendation');
+            const action = urlParams.get('action');
+            const accessLevel = urlParams.get("access");
+
+            document.getElementById("docBtn").href = `/search?access=${accessLevel}`;
             console.log("Query:", query);
-            console.log("Identifier:", identifier);
       
+            if (homeLink) { homeLink.href = `/index2?access=${accessLevel}`;}
             // Fetch and render the table using the received parameters
-            fetch(`/get_fw?query=${query}&identifier=${identifier}`)
+            fetch(`/get_fw?query=${query}&recommendation=${recommendation}&action=${action}&access=${accessLevel}`)
                 .then(response => response.json())
                 .then(data => {
                     console.log("API Response Data:", data);  // For debugging
@@ -101,7 +104,7 @@
                     document.getElementById("table-container").innerHTML = "<p>Error loading data.</p>";
             });
 
-            fetch(`/get_fw_network?query=${query}&identifier=${identifier}`)
+            fetch(`/get_fw_network?query=${query}&recommendation=${recommendation}&action=${action}&access=${accessLevel}`)
                 .then(response => response.json())
                 .then(data => {
                     console.log("✅ Raw API Data:", data);
@@ -172,13 +175,11 @@
                     .attr("r", 20)
                     .attr("fill", d => {
                         switch (d.type) {
-                            case "Identifier":
-                                return "#4a7ba6";
                             case "Recommendation":
                                 return "#9799ba";
                             case "Action":
                                 return "#bc85a3";
-                            case "Formal Stakeholder":
+                            case "Stakeholder":
                                 return "#feadb9";
                             default:
                                 return "#cccccc";
@@ -192,9 +193,9 @@
                         .on("end", dragended));
 
                 // Tooltip on hover
-                node.append("title").text(d => d.label);
+                node.append("title").text(d => d.tooltip);
 
-                // Node labels
+                // Node labels use the short label value as before
                 const nodeLabels = zoomGroup.append("g")
                     .selectAll(".node-label")
                     .data(graphData.nodes)
@@ -202,21 +203,21 @@
                     .attr("class", "node-label")
                     .attr("dx", 12)
                     .attr("dy", ".35em")
-                    .text(d => d.label)
+                    .text(d => d.label)  // This is shortRecommendation or shortAction for recs/actions
                     .style("font-size", "12px")
                     .style("fill", "#333");
 
                 // Link labels
-                const linkLabels = zoomGroup.append("g")
-                    .selectAll(".link-label")
-                    .data(graphData.links)
-                    .enter().append("text")
-                    .attr("class", "link-label")
-                    .attr("dx", 5)
-                    .attr("dy", ".35em")
-                    .text(d => d.type)
-                    .style("font-size", "10px")
-                    .style("fill", "#666");
+                //const linkLabels = zoomGroup.append("g")
+                  //  .selectAll(".link-label")
+                  //  .data(graphData.links)
+                  //  .enter().append("text")
+                  //  .attr("class", "link-label")
+                  //  .attr("dx", 5)
+                  //  .attr("dy", ".35em")
+                  //  .text(d => d.type)
+                  //  .style("font-size", "10px")
+                  //  .style("fill", "#666");
 
                 const simulation = d3.forceSimulation(graphData.nodes)
                     .force("link", d3.forceLink(graphData.links).id(d => d.id).distance(150))
@@ -238,9 +239,9 @@
                         .attr("x", d => d.x)
                         .attr("y", d => d.y);
 
-                    linkLabels
-                        .attr("x", d => (d.source.x + d.target.x) / 2)
-                        .attr("y", d => (d.source.y + d.target.y) / 2);
+                    //linkLabels
+                    //    .attr("x", d => (d.source.x + d.target.x) / 2)
+                    //    .attr("y", d => (d.source.y + d.target.y) / 2);
                 });
 
                 function dragstarted(event) {

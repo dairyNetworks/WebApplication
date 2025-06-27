@@ -53,11 +53,11 @@
     </style>
 </head>
 <body class="search-page">
-    <a href="/" class="home-link">
+    <a id="homeLink" href="/index2" class="home-link">
         <img src="/static/images/icon.jpg" alt="Home" class="home-icon">
     </a>
     <div class="buttons">
-        <a href="/search" class="btn">Back to Search</a>
+            <a id="docBtn" class="btn">Back to Search</a>
     </div>
     <div class="result-container">
         <h1>Speaker Search Results for "{{ search_keywords }}"</h1>
@@ -67,22 +67,20 @@
             <table class="result-table">
                 <thead>
                     <tr>
-                        <th>Speaker</th>
                         <th>Year</th>
                         <th>Organisation</th>
                         <th>Designation</th>
-                        <th>Region</th>
+                         <!--<th>Region / Stakeholder Category</th>-->
                         <th>Keywords</th>
                     </tr>
                 </thead>
                 <tbody>
                     {% for row in results %}
                     <tr data-speaker="{{ row.Speaker }}">
-                        <td>{{ row.Speaker }}</td>
                         <td>{{ row.Sliding_year }}</td>
                         <td>{{ row.Organisation }}</td>
                         <td>{{ row.Designation }}</td>
-                        <td>{{ row.Region }}</td>
+                         <!--<td>{{ row["Region or Stakeholder Category"] }}</td>-->
                         <td>{{ row.Keywords }}</td>
                     </tr>
                     {% endfor %}
@@ -90,6 +88,14 @@
             </table>
         </div>
         <script>
+            const urlParams = new URLSearchParams(window.location.search);
+            const accessLevel = urlParams.get("access");
+
+            document.getElementById("docBtn").href = `/search?access=${accessLevel}`;
+            
+            if (homeLink) {
+                homeLink.href = `/index2?access=${accessLevel}`;
+            }
             // Event delegation for double-click functionality
             document.querySelector(".result-table tbody").addEventListener("dblclick", function (event) {
                 const row = event.target.closest("tr");

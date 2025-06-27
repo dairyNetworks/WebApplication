@@ -55,13 +55,19 @@
   </style>
 </head>
 <body>
-  <a href="/" class="home-link">
-    <img src="/static/images/icon.jpg" alt="Home" class="home-icon" />
+  <a id="homeLink" href="/index2" class="home-link">
+        <img src="/static/images/icon.jpg" alt="Home" class="home-icon">
   </a>
   <div class="buttons">
-    <a href="/stakeholdermapping" class="btn">Stakeholder Mapping</a>
-    <a href="/sentimentstats" class="btn">Sentiment Analysis</a>
-    <a href="/actionquery" class="btn">Action Plans by Actions</a>
+    <a id="btnStakeholderMapping" href="/stakeholdermapping" class="btn">Stakeholder Mapping</a>
+    <a id="btnSentimentStats" href="/sentimentstats" class="btn">Sentiment Analysis</a>
+    <a id="btnActionQuery" href="/actionquery" class="btn">Action Plans by Actions</a>
+    <a id="guideLink" href="/manual" target="_blank" class="guide-link">
+      <img src="/static/images/user guide2.jpg" alt="User Guide" class="guide-icon">
+    </a>
+    <a href="/" class="login-image-button">
+      <img src="/static/images/user login.jpg" alt="Login" class="login-icon">
+    </a>
   </div>
   <div class="networkquerysection1">
     <form id="tableForm">
@@ -84,11 +90,23 @@
   <div id="table-container" style="margin-bottom: 20px;"></div>
 
   <script>
+    const urlParams = new URLSearchParams(window.location.search);
+    const accessLevel = urlParams.get("access");
+
+    if (accessLevel) {
+        document.getElementById("btnStakeholderMapping").href = `/stakeholdermapping?access=${accessLevel}`;
+        document.getElementById("btnSentimentStats").href = `/sentimentstats?access=${accessLevel}`;
+        document.getElementById("btnActionQuery").href = `/actionquery?access=${accessLevel}`;
+    }
+
+    if (homeLink) {
+                homeLink.href = `/index2?access=${accessLevel}`;}
+
     async function fetchActionTableData() {
       const selectedQuery = document.getElementById('query').value;
 
       try {
-        const response = await fetch(`/get_actionstakeholder_table?query=${selectedQuery}`);
+        const response = await fetch(`/get_actionstakeholder_table?query=${encodeURIComponent(selectedQuery)}&access=${encodeURIComponent(accessLevel || "")}`);
         const data = await response.json();
 
         if (data.table && data.table.length > 0) {
@@ -105,7 +123,7 @@
       const selectedQuery = document.getElementById('query').value;
 
       try {
-        const response = await fetch(`/get_fvstakeholder_table?query=${selectedQuery}`);
+        const response = await fetch(`/get_fvstakeholder_table?query=${encodeURIComponent(selectedQuery)}&access=${encodeURIComponent(accessLevel || "")}`);
         const data = await response.json();
 
         if (data.table && data.table.length > 0) {
@@ -122,7 +140,7 @@
       const selectedQuery = document.getElementById('query').value;
 
       try {
-        const response = await fetch(`/get_fwstakeholder_table?query=${selectedQuery}`);
+        const response = await fetch(`/get_fwstakeholder_table?query=${encodeURIComponent(selectedQuery)}&access=${encodeURIComponent(accessLevel || "")}`);
         const data = await response.json();
 
         if (data.table && data.table.length > 0) {
@@ -152,7 +170,6 @@
         headerRow.appendChild(th);
       });
 
-      // Add extra column for actions
       const actionTh = document.createElement("th");
       actionTh.textContent = "Search";
       headerRow.appendChild(actionTh);
@@ -170,18 +187,16 @@
           tr.appendChild(td);
         });
 
-        // Create action button
         const actionTd = document.createElement("td");
-
         const fileName = row["File Name"];
         const formalStakeholder = row["Formal Stakeholder"];
         const selectedQuery = document.getElementById('query').value;
 
         const actionBtn = document.createElement("button");
         actionBtn.textContent = "Action";
-        actionBtn.classList.add("btn", ".btn-custom-small");
+        actionBtn.classList.add("btn", "btn-custom-small");
         actionBtn.onclick = () => {
-          const url = `/actionstakeholderlist.html?query=${encodeURIComponent(selectedQuery)}&formalStakeholder=${encodeURIComponent(formalStakeholder)}&fileName=${encodeURIComponent(fileName)}`;
+          const url = `/actionstakeholderlist.html?query=${encodeURIComponent(selectedQuery)}&formalStakeholder=${encodeURIComponent(formalStakeholder)}&fileName=${encodeURIComponent(fileName)}&access=${encodeURIComponent(accessLevel || "")}`;
           window.open(url, '_blank');
         };
 
@@ -211,7 +226,6 @@
         headerRow.appendChild(th);
       });
 
-      // Add extra column for actions
       const actionTh = document.createElement("th");
       actionTh.textContent = "Search";
       headerRow.appendChild(actionTh);
@@ -229,17 +243,15 @@
           tr.appendChild(td);
         });
 
-        // Create action button
         const actionTd = document.createElement("td");
-
-        const formalStakeholder =  row["Formal Stakeholder"];
+        const formalStakeholder = row["Formal Stakeholder"];
         const selectedQuery = document.getElementById('query').value;
 
         const actionBtn = document.createElement("button");
         actionBtn.textContent = "Action";
-        actionBtn.classList.add("btn", ".btn-custom-small");
+        actionBtn.classList.add("btn", "btn-custom-small");
         actionBtn.onclick = () => {
-          const url = `/foodvisionstakeholder.html?query=${encodeURIComponent(selectedQuery)}&formalStakeholder=${encodeURIComponent(formalStakeholder)}`;
+          const url = `/foodvisionstakeholder.html?query=${encodeURIComponent(selectedQuery)}&formalStakeholder=${encodeURIComponent(formalStakeholder)}&access=${encodeURIComponent(accessLevel || "")}`;
           window.open(url, '_blank');
         };
 
@@ -269,7 +281,6 @@
         headerRow.appendChild(th);
       });
 
-      // Add extra column for actions
       const actionTh = document.createElement("th");
       actionTh.textContent = "Search";
       headerRow.appendChild(actionTh);
@@ -287,17 +298,15 @@
           tr.appendChild(td);
         });
 
-        // Create action button
         const actionTd = document.createElement("td");
-
-        const formalStakeholder =  row["Formal Stakeholder"];
+        const formalStakeholder = row["Formal Stakeholder"];
         const selectedQuery = document.getElementById('query').value;
 
         const actionBtn = document.createElement("button");
         actionBtn.textContent = "Action";
-        actionBtn.classList.add("btn", ".btn-custom-small");
+        actionBtn.classList.add("btn", "btn-custom-small");
         actionBtn.onclick = () => {
-          const url = `/foodwisestakeholder.html?query=${encodeURIComponent(selectedQuery)}&formalStakeholder=${encodeURIComponent(formalStakeholder)}`;
+          const url = `/foodwisestakeholder.html?query=${encodeURIComponent(selectedQuery)}&formalStakeholder=${encodeURIComponent(formalStakeholder)}&access=${encodeURIComponent(accessLevel || "")}`;
           window.open(url, '_blank');
         };
 
@@ -309,7 +318,7 @@
       table.appendChild(tbody);
       container.appendChild(table);
     }
-
   </script>
+
 </body>
 </html>
