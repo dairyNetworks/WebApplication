@@ -8,15 +8,26 @@ driver = GraphDatabase.driver(uri, auth=(username, password))
 
 def get_carbon_fwstakeholder_network(formalStakeholder: str):
     cypher_query = """
-        MATCH (s:CARBON_FWSTAKEHOLDER_Stakeholder {name: $formalStakeholder})
-            -[:CARBON_FWSTAKEHOLDER_HAS_RECOMMENDATION]->(r:CARBON_FWSTAKEHOLDER_Recommendation {stakeholder: $formalStakeholder})
-            -[:CARBON_FWSTAKEHOLDER_HAS_ACTION]->(a:CARBON_FWSTAKEHOLDER_Action {stakeholder: $formalStakeholder})
+        MATCH (s:CARBON_LONE_FWSTAKEHOLDER_Stakeholder {name: $formalStakeholder})
+        MATCH (a:CARBON_LONE_FWSTAKEHOLDER_Action)-[:CARBON_LONE_FWSTAKEHOLDER_ACTION_ASSIGNED_TO]->(s)
+        MATCH (r:CARBON_LONE_FWSTAKEHOLDER_Recommendation)-[:CARBON_LONE_FWSTAKEHOLDER_RECOMMENDATION_HAS_ACTION]->(a)
         RETURN DISTINCT 
-            id(s) AS id_stakeholder, s.name AS label_stakeholder, 'Stakeholder' AS type_stakeholder,
-            id(r) AS id_recommendation, r.name AS label_recommendation, 'Recommendation' AS type_recommendation,
-            id(a) AS id_action, a.name AS label_action, 'Action' AS type_action
-        ORDER BY label_stakeholder, label_recommendation, label_action
+            id(s) AS id_stakeholder, 
+            s.name AS label_stakeholder, 
+            'Stakeholder' AS type_stakeholder,
+
+            id(r) AS id_recommendation, 
+            r.name AS fullRecommendation, 
+            r.shortRecommendation AS shortRecommendation, 
+            'Recommendation' AS type_recommendation,
+
+            id(a) AS id_action, 
+            a.name AS fullAction, 
+            a.shortAction AS shortAction,
+            'Action' AS type_action
+        ORDER BY label_stakeholder, fullRecommendation, fullAction
     """
+
     session = driver.session()
     try:
         results = session.run(cypher_query, formalStakeholder=formalStakeholder)
@@ -25,26 +36,46 @@ def get_carbon_fwstakeholder_network(formalStakeholder: str):
         links = []
 
         for record in results:
-            # Add nodes
-            for prefix in ['stakeholder', 'recommendation', 'action']:
-                node_id = record[f"id_{prefix}"]
-                if node_id not in nodes:
-                    nodes[node_id] = {
-                        "id": node_id,
-                        "label": record[f"label_{prefix}"],
-                        "type": record[f"type_{prefix}"]
-                    }
-
+            # Add Stakeholder node
+            s_id = record["id_stakeholder"]
+            if s_id not in nodes:
+                nodes[s_id] = {
+                    "id": s_id,
+                    "label": record["label_stakeholder"],
+                    "fullLabel": record["label_stakeholder"],
+                    "type": record["type_stakeholder"]
+                }
+            
+            # Add Recommendation node
+            r_id = record["id_recommendation"]
+            if r_id not in nodes:
+                nodes[r_id] = {
+                    "id": r_id,
+                    "label": record["shortRecommendation"] or record["fullRecommendation"],
+                    "fullLabel": record["fullRecommendation"],
+                    "type": record["type_recommendation"]
+                }
+            
+            # Add Action node
+            a_id = record["id_action"]
+            if a_id not in nodes:
+                nodes[a_id] = {
+                    "id": a_id,
+                    "label": record["shortAction"] or record["fullAction"],
+                    "fullLabel": record["fullAction"],
+                    "type": record["type_action"]
+                }
+            
             # Add links
             links.append({
-                "source": record["id_stakeholder"],
-                "target": record["id_recommendation"],
-                "type": "CARBON_FWSTAKEHOLDER_HAS_RECOMMENDATION"
+                "source": s_id,
+                "target": r_id,
+                "type": "CARBON_LONE_FWSTAKEHOLDER_HAS_RECOMMENDATION"
             })
             links.append({
-                "source": record["id_recommendation"],
-                "target": record["id_action"],
-                "type": "CARBON_FWSTAKEHOLDER_HAS_ACTION"
+                "source": r_id,
+                "target": a_id,
+                "type": "CARBON_LONE_FWSTAKEHOLDER_HAS_ACTION"
             })
 
         print(f"\n✅ Total nodes: {len(nodes)}, Total links: {len(links)}")
@@ -62,15 +93,26 @@ def get_carbon_fwstakeholder_network(formalStakeholder: str):
 
 def get_water_fwstakeholder_network(formalStakeholder: str):
     cypher_query = """
-        MATCH (s:WATER_FWSTAKEHOLDER_Stakeholder {name: $formalStakeholder})
-            -[:WATER_FWSTAKEHOLDER_HAS_RECOMMENDATION]->(r:WATER_FWSTAKEHOLDER_Recommendation {stakeholder: $formalStakeholder})
-            -[:WATER_FWSTAKEHOLDER_HAS_ACTION]->(a:WATER_FWSTAKEHOLDER_Action {stakeholder: $formalStakeholder})
+        MATCH (s:WATER_LONE_FWSTAKEHOLDER_Stakeholder {name: $formalStakeholder})
+        MATCH (a:WATER_LONE_FWSTAKEHOLDER_Action)-[:WATER_LONE_FWSTAKEHOLDER_ACTION_ASSIGNED_TO]->(s)
+        MATCH (r:WATER_LONE_FWSTAKEHOLDER_Recommendation)-[:WATER_LONE_FWSTAKEHOLDER_RECOMMENDATION_HAS_ACTION]->(a)
         RETURN DISTINCT 
-            id(s) AS id_stakeholder, s.name AS label_stakeholder, 'Stakeholder' AS type_stakeholder,
-            id(r) AS id_recommendation, r.name AS label_recommendation, 'Recommendation' AS type_recommendation,
-            id(a) AS id_action, a.name AS label_action, 'Action' AS type_action
-        ORDER BY label_stakeholder, label_recommendation, label_action
+            id(s) AS id_stakeholder, 
+            s.name AS label_stakeholder, 
+            'Stakeholder' AS type_stakeholder,
+
+            id(r) AS id_recommendation, 
+            r.name AS fullRecommendation, 
+            r.shortRecommendation AS shortRecommendation, 
+            'Recommendation' AS type_recommendation,
+
+            id(a) AS id_action, 
+            a.name AS fullAction, 
+            a.shortAction AS shortAction,
+            'Action' AS type_action
+        ORDER BY label_stakeholder, fullRecommendation, fullAction
     """
+
     session = driver.session()
     try:
         results = session.run(cypher_query, formalStakeholder=formalStakeholder)
@@ -79,26 +121,46 @@ def get_water_fwstakeholder_network(formalStakeholder: str):
         links = []
 
         for record in results:
-            # Add nodes
-            for prefix in ['stakeholder', 'recommendation', 'action']:
-                node_id = record[f"id_{prefix}"]
-                if node_id not in nodes:
-                    nodes[node_id] = {
-                        "id": node_id,
-                        "label": record[f"label_{prefix}"],
-                        "type": record[f"type_{prefix}"]
-                    }
-
+            # Add Stakeholder node
+            s_id = record["id_stakeholder"]
+            if s_id not in nodes:
+                nodes[s_id] = {
+                    "id": s_id,
+                    "label": record["label_stakeholder"],
+                    "fullLabel": record["label_stakeholder"],
+                    "type": record["type_stakeholder"]
+                }
+            
+            # Add Recommendation node
+            r_id = record["id_recommendation"]
+            if r_id not in nodes:
+                nodes[r_id] = {
+                    "id": r_id,
+                    "label": record["shortRecommendation"] or record["fullRecommendation"],
+                    "fullLabel": record["fullRecommendation"],
+                    "type": record["type_recommendation"]
+                }
+            
+            # Add Action node
+            a_id = record["id_action"]
+            if a_id not in nodes:
+                nodes[a_id] = {
+                    "id": a_id,
+                    "label": record["shortAction"] or record["fullAction"],
+                    "fullLabel": record["fullAction"],
+                    "type": record["type_action"]
+                }
+            
             # Add links
             links.append({
-                "source": record["id_stakeholder"],
-                "target": record["id_recommendation"],
-                "type": "CARBON_FWSTAKEHOLDER_HAS_RECOMMENDATION"
+                "source": s_id,
+                "target": r_id,
+                "type": "WATER_LONE_FWSTAKEHOLDER_HAS_RECOMMENDATION"
             })
             links.append({
-                "source": record["id_recommendation"],
-                "target": record["id_action"],
-                "type": "CARBON_FWSTAKEHOLDER_HAS_ACTION"
+                "source": r_id,
+                "target": a_id,
+                "type": "WATER_LONE_FWSTAKEHOLDER_HAS_ACTION"
             })
 
         print(f"\n✅ Total nodes: {len(nodes)}, Total links: {len(links)}")
@@ -116,15 +178,26 @@ def get_water_fwstakeholder_network(formalStakeholder: str):
 
 def get_live_fwstakeholder_network(formalStakeholder: str):
     cypher_query = """
-        MATCH (s:LIVE_FWSTAKEHOLDER_Stakeholder {name: $formalStakeholder})
-            -[:LIVE_FWSTAKEHOLDER_HAS_RECOMMENDATION]->(r:LIVE_FWSTAKEHOLDER_Recommendation {stakeholder: $formalStakeholder})
-            -[:LIVE_FWSTAKEHOLDER_HAS_ACTION]->(a:LIVE_FWSTAKEHOLDER_Action {stakeholder: $formalStakeholder})
+        MATCH (s:LIVE_LONE_FWSTAKEHOLDER_Stakeholder {name: $formalStakeholder})
+        MATCH (a:LIVE_LONE_FWSTAKEHOLDER_Action)-[:LIVE_LONE_FWSTAKEHOLDER_ACTION_ASSIGNED_TO]->(s)
+        MATCH (r:LIVE_LONE_FWSTAKEHOLDER_Recommendation)-[:LIVE_LONE_FWSTAKEHOLDER_RECOMMENDATION_HAS_ACTION]->(a)
         RETURN DISTINCT 
-            id(s) AS id_stakeholder, s.name AS label_stakeholder, 'Stakeholder' AS type_stakeholder,
-            id(r) AS id_recommendation, r.name AS label_recommendation, 'Recommendation' AS type_recommendation,
-            id(a) AS id_action, a.name AS label_action, 'Action' AS type_action
-        ORDER BY label_stakeholder, label_recommendation, label_action
+            id(s) AS id_stakeholder, 
+            s.name AS label_stakeholder, 
+            'Stakeholder' AS type_stakeholder,
+
+            id(r) AS id_recommendation, 
+            r.name AS fullRecommendation, 
+            r.shortRecommendation AS shortRecommendation, 
+            'Recommendation' AS type_recommendation,
+
+            id(a) AS id_action, 
+            a.name AS fullAction, 
+            a.shortAction AS shortAction,
+            'Action' AS type_action
+        ORDER BY label_stakeholder, fullRecommendation, fullAction
     """
+
     session = driver.session()
     try:
         results = session.run(cypher_query, formalStakeholder=formalStakeholder)
@@ -133,26 +206,46 @@ def get_live_fwstakeholder_network(formalStakeholder: str):
         links = []
 
         for record in results:
-            # Add nodes
-            for prefix in ['stakeholder', 'recommendation', 'action']:
-                node_id = record[f"id_{prefix}"]
-                if node_id not in nodes:
-                    nodes[node_id] = {
-                        "id": node_id,
-                        "label": record[f"label_{prefix}"],
-                        "type": record[f"type_{prefix}"]
-                    }
-
+            # Add Stakeholder node
+            s_id = record["id_stakeholder"]
+            if s_id not in nodes:
+                nodes[s_id] = {
+                    "id": s_id,
+                    "label": record["label_stakeholder"],
+                    "fullLabel": record["label_stakeholder"],
+                    "type": record["type_stakeholder"]
+                }
+            
+            # Add Recommendation node
+            r_id = record["id_recommendation"]
+            if r_id not in nodes:
+                nodes[r_id] = {
+                    "id": r_id,
+                    "label": record["shortRecommendation"] or record["fullRecommendation"],
+                    "fullLabel": record["fullRecommendation"],
+                    "type": record["type_recommendation"]
+                }
+            
+            # Add Action node
+            a_id = record["id_action"]
+            if a_id not in nodes:
+                nodes[a_id] = {
+                    "id": a_id,
+                    "label": record["shortAction"] or record["fullAction"],
+                    "fullLabel": record["fullAction"],
+                    "type": record["type_action"]
+                }
+            
             # Add links
             links.append({
-                "source": record["id_stakeholder"],
-                "target": record["id_recommendation"],
-                "type": "CARBON_FWSTAKEHOLDER_HAS_RECOMMENDATION"
+                "source": s_id,
+                "target": r_id,
+                "type": "LIVE_LONE_FWSTAKEHOLDER_HAS_RECOMMENDATION"
             })
             links.append({
-                "source": record["id_recommendation"],
-                "target": record["id_action"],
-                "type": "CARBON_FWSTAKEHOLDER_HAS_ACTION"
+                "source": r_id,
+                "target": a_id,
+                "type": "LIVE_LONE_FWSTAKEHOLDER_HAS_ACTION"
             })
 
         print(f"\n✅ Total nodes: {len(nodes)}, Total links: {len(links)}")
@@ -167,13 +260,272 @@ def get_live_fwstakeholder_network(formalStakeholder: str):
     except Exception as e:
         print("❌ Error fetching network data:", e)
         raise
-    
-def get_fwstakeholder_plan_network(query, formalStakeholder):
-    if query == "car":
+def get_carbon2_fwstakeholder_network(formalStakeholder: str):
+    cypher_query = """
+        MATCH (s:CARBON_LTWO_FWSTAKEHOLDER_Labels {name: $formalStakeholder})
+        MATCH (a:CARBON_LTWO_FWSTAKEHOLDER_Action)-[:CARBON_LTWO_FWSTAKEHOLDER_ACTION_ASSIGNED_TO]->(s)
+        MATCH (r:CARBON_LTWO_FWSTAKEHOLDER_Recommendation)-[:CARBON_LTWO_FWSTAKEHOLDER_RECOMMENDATION_HAS_ACTION]->(a)
+        RETURN DISTINCT 
+            id(s) AS id_stakeholder, 
+            s.name AS label_stakeholder, 
+            'Stakeholder' AS type_stakeholder,
+
+            id(r) AS id_recommendation, 
+            r.name AS fullRecommendation, 
+            r.shortRecommendation AS shortRecommendation, 
+            'Recommendation' AS type_recommendation,
+
+            id(a) AS id_action, 
+            a.name AS fullAction, 
+            a.shortAction AS shortAction,
+            'Action' AS type_action
+        ORDER BY label_stakeholder, fullRecommendation, fullAction
+    """
+
+    session = driver.session()
+    try:
+        results = session.run(cypher_query, formalStakeholder=formalStakeholder)
+
+        nodes = {}
+        links = []
+
+        for record in results:
+            # Stakeholder node (Label)
+            s_id = record["id_stakeholder"]
+            if s_id not in nodes:
+                nodes[s_id] = {
+                    "id": s_id,
+                    "label": record["label_stakeholder"],
+                    "fullLabel": record["label_stakeholder"],
+                    "type": record["type_stakeholder"]
+                }
+
+            # Recommendation node
+            r_id = record["id_recommendation"]
+            if r_id not in nodes:
+                nodes[r_id] = {
+                    "id": r_id,
+                    "label": record["shortRecommendation"] or record["fullRecommendation"],
+                    "fullLabel": record["fullRecommendation"],
+                    "type": record["type_recommendation"]
+                }
+
+            # Action node
+            a_id = record["id_action"]
+            if a_id not in nodes:
+                nodes[a_id] = {
+                    "id": a_id,
+                    "label": record["shortAction"] or record["fullAction"],
+                    "fullLabel": record["fullAction"],
+                    "type": record["type_action"]
+                }
+
+            # Add links
+            links.append({
+                "source": s_id,
+                "target": r_id,
+                "type": "CARBON_LTWO_FWSTAKEHOLDER_HAS_RECOMMENDATION"
+            })
+            links.append({
+                "source": r_id,
+                "target": a_id,
+                "type": "CARBON_LTWO_FWSTAKEHOLDER_HAS_ACTION"
+            })
+
+        print(f"\n✅ Total nodes: {len(nodes)}, Total links: {len(links)}")
+
+        return {
+            "graph": {
+                "nodes": list(nodes.values()),
+                "links": links
+            }
+        }
+
+    except Exception as e:
+        print("❌ Error fetching network data:", e)
+        raise
+def get_water2_fwstakeholder_network(formalStakeholder: str):
+    cypher_query = """
+        MATCH (s:WATER_LTWO_FWSTAKEHOLDER_Labels {name: $formalStakeholder})
+        MATCH (a:WATER_LTWO_FWSTAKEHOLDER_Action)-[:WATER_LTWO_FWSTAKEHOLDER_ACTION_ASSIGNED_TO]->(s)
+        MATCH (r:WATER_LTWO_FWSTAKEHOLDER_Recommendation)-[:WATER_LTWO_FWSTAKEHOLDER_RECOMMENDATION_HAS_ACTION]->(a)
+        RETURN DISTINCT 
+            id(s) AS id_stakeholder, 
+            s.name AS label_stakeholder, 
+            'Stakeholder' AS type_stakeholder,
+
+            id(r) AS id_recommendation, 
+            r.name AS fullRecommendation, 
+            r.shortRecommendation AS shortRecommendation, 
+            'Recommendation' AS type_recommendation,
+
+            id(a) AS id_action, 
+            a.name AS fullAction, 
+            a.shortAction AS shortAction,
+            'Action' AS type_action
+        ORDER BY label_stakeholder, fullRecommendation, fullAction
+    """
+
+    session = driver.session()
+    try:
+        results = session.run(cypher_query, formalStakeholder=formalStakeholder)
+
+        nodes = {}
+        links = []
+
+        for record in results:
+            # Stakeholder node (Label)
+            s_id = record["id_stakeholder"]
+            if s_id not in nodes:
+                nodes[s_id] = {
+                    "id": s_id,
+                    "label": record["label_stakeholder"],
+                    "fullLabel": record["label_stakeholder"],
+                    "type": record["type_stakeholder"]
+                }
+
+            # Recommendation node
+            r_id = record["id_recommendation"]
+            if r_id not in nodes:
+                nodes[r_id] = {
+                    "id": r_id,
+                    "label": record["shortRecommendation"] or record["fullRecommendation"],
+                    "fullLabel": record["fullRecommendation"],
+                    "type": record["type_recommendation"]
+                }
+
+            # Action node
+            a_id = record["id_action"]
+            if a_id not in nodes:
+                nodes[a_id] = {
+                    "id": a_id,
+                    "label": record["shortAction"] or record["fullAction"],
+                    "fullLabel": record["fullAction"],
+                    "type": record["type_action"]
+                }
+
+            # Add links
+            links.append({
+                "source": s_id,
+                "target": r_id,
+                "type": "WATER_LTWO_FWSTAKEHOLDER_HAS_RECOMMENDATION"
+            })
+            links.append({
+                "source": r_id,
+                "target": a_id,
+                "type": "WATER_LTWO_FWSTAKEHOLDER_HAS_ACTION"
+            })
+
+        print(f"\n✅ Total nodes: {len(nodes)}, Total links: {len(links)}")
+
+        return {
+            "graph": {
+                "nodes": list(nodes.values()),
+                "links": links
+            }
+        }
+
+    except Exception as e:
+        print("❌ Error fetching network data:", e)
+        raise
+
+def get_live2_fwstakeholder_network(formalStakeholder: str):
+    cypher_query = """
+        MATCH (s:LIVE_LTWO_FWSTAKEHOLDER_Labels {name: $formalStakeholder})
+        MATCH (a:LIVE_LTWO_FWSTAKEHOLDER_Action)-[:LIVE_LTWO_FWSTAKEHOLDER_ACTION_ASSIGNED_TO]->(s)
+        MATCH (r:LIVE_LTWO_FWSTAKEHOLDER_Recommendation)-[:LIVE_LTWO_FWSTAKEHOLDER_RECOMMENDATION_HAS_ACTION]->(a)
+        RETURN DISTINCT 
+            id(s) AS id_stakeholder, 
+            s.name AS label_stakeholder, 
+            'Stakeholder' AS type_stakeholder,
+
+            id(r) AS id_recommendation, 
+            r.name AS fullRecommendation, 
+            r.shortRecommendation AS shortRecommendation, 
+            'Recommendation' AS type_recommendation,
+
+            id(a) AS id_action, 
+            a.name AS fullAction, 
+            a.shortAction AS shortAction,
+            'Action' AS type_action
+        ORDER BY label_stakeholder, fullRecommendation, fullAction
+    """
+
+    session = driver.session()
+    try:
+        results = session.run(cypher_query, formalStakeholder=formalStakeholder)
+
+        nodes = {}
+        links = []
+
+        for record in results:
+            # Stakeholder node (Label)
+            s_id = record["id_stakeholder"]
+            if s_id not in nodes:
+                nodes[s_id] = {
+                    "id": s_id,
+                    "label": record["label_stakeholder"],
+                    "fullLabel": record["label_stakeholder"],
+                    "type": record["type_stakeholder"]
+                }
+
+            # Recommendation node
+            r_id = record["id_recommendation"]
+            if r_id not in nodes:
+                nodes[r_id] = {
+                    "id": r_id,
+                    "label": record["shortRecommendation"] or record["fullRecommendation"],
+                    "fullLabel": record["fullRecommendation"],
+                    "type": record["type_recommendation"]
+                }
+
+            # Action node
+            a_id = record["id_action"]
+            if a_id not in nodes:
+                nodes[a_id] = {
+                    "id": a_id,
+                    "label": record["shortAction"] or record["fullAction"],
+                    "fullLabel": record["fullAction"],
+                    "type": record["type_action"]
+                }
+
+            # Add links
+            links.append({
+                "source": s_id,
+                "target": r_id,
+                "type": "LIVE_LTWO_FWSTAKEHOLDER_HAS_RECOMMENDATION"
+            })
+            links.append({
+                "source": r_id,
+                "target": a_id,
+                "type": "LIVE_LTWO_FWSTAKEHOLDER_HAS_ACTION"
+            })
+
+        print(f"\n✅ Total nodes: {len(nodes)}, Total links: {len(links)}")
+
+        return {
+            "graph": {
+                "nodes": list(nodes.values()),
+                "links": links
+            }
+        }
+
+    except Exception as e:
+        print("❌ Error fetching network data:", e)
+        raise
+
+def get_fwstakeholder_plan_network(query, formalStakeholder, access):
+    if query == "car" and access == 'levelone':
         return get_carbon_fwstakeholder_network(formalStakeholder)
-    elif query == "wat":
+    elif query == "wat" and access == 'levelone':
         return get_water_fwstakeholder_network(formalStakeholder)
-    elif query == "liv":
+    elif query == "liv" and access == 'levelone':
         return get_live_fwstakeholder_network(formalStakeholder)
+    elif query == "car" and access == 'leveltwo':
+        return get_carbon2_fwstakeholder_network(formalStakeholder)
+    elif query == "wat" and access == 'leveltwo':
+        return get_water2_fwstakeholder_network(formalStakeholder)
+    elif query == "liv" and access == 'leveltwo':
+        return get_live2_fwstakeholder_network(formalStakeholder)
     else:
         return []

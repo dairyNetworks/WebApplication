@@ -8,21 +8,19 @@ driver = GraphDatabase.driver(uri, auth=(username, password))
 
 def get_carbon_fw():
     query = """
-        MATCH (i:CARBON_FW_IDENTIFIER)
-        MATCH (a:CARBON_FW_ACTION)-[:CARBON_FW_LINKED_TO]->(i)
-        MATCH (r:CARBON_FW_RECOMMENDATION)-[:CARBON_FW_RECOMMENDS]->(a)
-        RETURN DISTINCT
-            i.name AS Identifier,
-            r.name AS Recommendation,
-            a.name AS Action
-        ORDER BY Identifier, Recommendation, Action
+        MATCH (r:CARBON_LONE_FWSTAKEHOLDER_Recommendation)-[:CARBON_LONE_FWSTAKEHOLDER_RECOMMENDATION_HAS_ACTION]->(a:CARBON_LONE_FWSTAKEHOLDER_Action)
+        RETURN DISTINCT 
+        r.name AS Recommendation, 
+        r.shortRecommendation AS ShortRecommendation, 
+        a.name AS Action, 
+        a.shortAction AS ShortAction
+        ORDER BY Recommendation, Action
     """
     with driver.session() as session:
         results = session.run(query)
         table = []
         for record in results:
             table.append({
-                "Identifier" : record["Identifier"],
                 "Recommendation": record["Recommendation"],
                 "Action": record["Action"]
             })
@@ -30,21 +28,19 @@ def get_carbon_fw():
 
 def get_water_fw():
     query = """
-        MATCH (i:WATER_FW_IDENTIFIER)
-        MATCH (a:WATER_FW_ACTION)-[:WATER_FW_LINKED_TO]->(i)
-        MATCH (r:WATER_FW_RECOMMENDATION)-[:WATER_FW_RECOMMENDS]->(a)
-        RETURN DISTINCT
-            i.name AS Identifier,
-            r.name AS Recommendation,
-            a.name AS Action
-        ORDER BY Identifier, Recommendation, Action
+        MATCH (r:WATER_LONE_FWSTAKEHOLDER_Recommendation)-[:WATER_LONE_FWSTAKEHOLDER_RECOMMENDATION_HAS_ACTION]->(a:WATER_LONE_FWSTAKEHOLDER_Action)
+        RETURN DISTINCT 
+        r.name AS Recommendation, 
+        r.shortRecommendation AS ShortRecommendation, 
+        a.name AS Action, 
+        a.shortAction AS ShortAction
+        ORDER BY Recommendation, Action
     """
     with driver.session() as session:
         results = session.run(query)
         table = []
         for record in results:
             table.append({
-                "Identifier" : record["Identifier"],
                 "Recommendation": record["Recommendation"],
                 "Action": record["Action"]
             })
@@ -52,32 +48,96 @@ def get_water_fw():
     
 def get_livelihood_fw():
     query = """
-        MATCH (i:LIVE_FW_IDENTIFIER)
-        MATCH (a:LIVE_FW_ACTION)-[:LIVE_FW_LINKED_TO]->(i)
-        MATCH (r:LIVE_FW_RECOMMENDATION)-[:LIVE_FW_RECOMMENDS]->(a)
-        RETURN DISTINCT
-            i.name AS Identifier,
-            r.name AS Recommendation,
-            a.name AS Action
-        ORDER BY Identifier, Recommendation, Action
+        MATCH (r:LIVE_LONE_FWSTAKEHOLDER_Recommendation)-[:LIVE_LONE_FWSTAKEHOLDER_RECOMMENDATION_HAS_ACTION]->(a:LIVE_LONE_FWSTAKEHOLDER_Action)
+        RETURN DISTINCT 
+        r.name AS Recommendation, 
+        r.shortRecommendation AS ShortRecommendation, 
+        a.name AS Action, 
+        a.shortAction AS ShortAction
+        ORDER BY Recommendation, Action
     """
     with driver.session() as session:
         results = session.run(query)
         table = []
         for record in results:
             table.append({
-                "Identifier" : record["Identifier"],
                 "Recommendation": record["Recommendation"],
                 "Action": record["Action"]
             })
         return table
 
-def get_fw_table(query):
-    if query == "car":
+def get_carbon2_fw():
+    query = """
+        MATCH (r:CARBON_LTWO_FWSTAKEHOLDER_Recommendation)-[:CARBON_LTWO_FWSTAKEHOLDER_RECOMMENDATION_HAS_ACTION]->(a:CARBON_LTWO_FWSTAKEHOLDER_Action)
+        RETURN DISTINCT 
+        r.name AS Recommendation, 
+        r.shortRecommendation AS ShortRecommendation, 
+        a.name AS Action, 
+        a.shortAction AS ShortAction
+        ORDER BY Recommendation, Action
+    """
+    with driver.session() as session:
+        results = session.run(query)
+        table = []
+        for record in results:
+            table.append({
+                "Recommendation": record["Recommendation"],
+                "Action": record["Action"]
+            })
+        return table
+
+def get_water2_fw():
+    query = """
+        MATCH (r:WATER_LTWO_FWSTAKEHOLDER_Recommendation)-[:WATER_LTWO_FWSTAKEHOLDER_RECOMMENDATION_HAS_ACTION]->(a:WATER_LTWO_FWSTAKEHOLDER_Action)
+        RETURN DISTINCT 
+        r.name AS Recommendation, 
+        r.shortRecommendation AS ShortRecommendation, 
+        a.name AS Action, 
+        a.shortAction AS ShortAction
+        ORDER BY Recommendation, Action
+    """
+    with driver.session() as session:
+        results = session.run(query)
+        table = []
+        for record in results:
+            table.append({
+                "Recommendation": record["Recommendation"],
+                "Action": record["Action"]
+            })
+        return table
+    
+def get_livelihood2_fw():
+    query = """
+        MATCH (r:LIVE_LTWO_FWSTAKEHOLDER_Recommendation)-[:LIVE_LTWO_FWSTAKEHOLDER_RECOMMENDATION_HAS_ACTION]->(a:LIVE_LTWO_FWSTAKEHOLDER_Action)
+        RETURN DISTINCT 
+        r.name AS Recommendation, 
+        r.shortRecommendation AS ShortRecommendation, 
+        a.name AS Action, 
+        a.shortAction AS ShortAction
+        ORDER BY Recommendation, Action
+    """
+    with driver.session() as session:
+        results = session.run(query)
+        table = []
+        for record in results:
+            table.append({
+                "Recommendation": record["Recommendation"],
+                "Action": record["Action"]
+            })
+        return table
+    
+def get_fw_table(query,access):
+    if query == "car" and access == 'levelone':
         return get_carbon_fw()
-    elif query == "wat":
+    elif query == "wat" and access == 'levelone':
         return get_water_fw()
-    elif query == "liv":
+    elif query == "liv" and access == 'levelone':
         return get_livelihood_fw()
+    elif query == "car" and access == 'leveltwo':
+        return get_carbon2_fw()
+    elif query == "wat" and access == 'leveltwo':
+        return get_water2_fw()
+    elif query == "liv" and access == 'leveltwo':
+        return get_livelihood2_fw()
     else:
         return []
