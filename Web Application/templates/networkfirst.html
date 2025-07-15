@@ -29,6 +29,7 @@
         <a id="btnActionQuery" href="#"><button type="button">Action Plans by Actions</button></a>
         <a id="btnSentimentStats" href="#"><button type="button">Sentiment Analysis</button></a>
         <a id="btnStakeholderMapping" href="#"><button type="button">Stakeholder Mapping</button></a>
+        <a id="btnCompleteNetwork" href="#"><button type="button">Complete Network</button></a>
       </div>
     </form>
   </div>
@@ -42,6 +43,7 @@
       document.getElementById("btnActionQuery").href = `/actionquery?access=${accessLevel}`;
       document.getElementById("btnSentimentStats").href = `/sentimentstats?access=${accessLevel}`;
       document.getElementById("btnStakeholderMapping").href = `/stakeholdermapping?access=${accessLevel}`;
+      document.getElementById("btnCompleteNetwork").href = `/completenetwork?access=${accessLevel}`;
     }
     if (homeLink) {
                 homeLink.href = `/index2?access=${accessLevel}`;

@@ -129,6 +129,38 @@
                     document.getElementById("graph-container").innerHTML = "<p>Error loading graph data.</p>";
                 });
 
+            function createLegend(svg, width, accessLevel) {
+                const legendData = [
+                    { label: "Mission", color: "#9799ba" },
+                    { label: "Goal", color: "#feadb9" },
+                    { label: "Action", color: "#bc85a3"},
+                    { label: "Stakeholder", color: "#4a7ba6" }
+                ];
+
+                const legendGroup = svg.append("g")
+                    .attr("class", "legend-group")
+                    .attr("transform", `translate(${width - 250}, 60)`); // move down for spacing
+
+                legendGroup.selectAll("rect")
+                    .data(legendData)
+                    .enter()
+                    .append("rect")
+                    .attr("x", 0)
+                    .attr("y", (d, i) => i * 25)
+                    .attr("width", 18)
+                    .attr("height", 18)
+                    .style("fill", d => d.color);
+
+                legendGroup.selectAll("text")
+                    .data(legendData)
+                    .enter()
+                    .append("text")
+                    .attr("x", 25)
+                    .attr("y", (d, i) => i * 25 + 13)
+                    .text(d => d.label)
+                    .style("font-size", "13px")
+                    .style("fill", "#333");
+                }
 
             function renderGraph(graphData) {
                 const width = document.getElementById('graph-container').clientWidth;
@@ -152,6 +184,7 @@
                     .attr("height", height);
 
                 const zoomGroup = svg.append("g");
+                createLegend(svg, width, accessLevel);
 
                 const zoom = d3.zoom()
                     .scaleExtent([0.1, 4])
