@@ -525,3 +525,27 @@ option {
     max-width: 1200px;                  /* Optional width */
     background-color: #fff;           /* Optional white background */
 }
+.category-link {
+    display: block;
+    color: black !important;              /* Override default blue */
+    text-decoration: none !important;     /* Remove underline */
+    font-size: 20px;
+    letter-spacing: 2px;
+    background: none;
+    border: none;
+    padding: 8px 20px;
+    margin: 10px 0;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-family: "Arial", Helvetica, sans-serif;
+}
+
+.category-link:hover {
+    color: #cccccc;
+    background-color: black;
+    text-decoration: none;
+}
+
+.category-link:active {
+    color: #999999;
+}
