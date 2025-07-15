@@ -137,7 +137,7 @@ def get_carbon2_fvstakeholder(formalStakeholder: str):
         table = []
         for record in results:
             table.append({
-                "Formal Stakeholder": record["FormalStakeholder"],
+                "Stakeholder": record["FormalStakeholder"],
                 "Mission": record["Mission"],
                 "Mission Statement": record.get("MissionStatement"),
                 "Goal": record["Goal"],
@@ -173,7 +173,7 @@ def get_water2_fvstakeholder(formalStakeholder: str):
         table = []
         for record in results:
             table.append({
-                "Formal Stakeholder": record["FormalStakeholder"],
+                "Stakeholder": record["FormalStakeholder"],
                 "Mission": record["Mission"],
                 "Mission Statement": record.get("MissionStatement"),
                 "Goal": record["Goal"],
@@ -209,7 +209,7 @@ def get_live2_fvstakeholder(formalStakeholder: str):
         table = []
         for record in results:
             table.append({
-                "Formal Stakeholder": record["FormalStakeholder"],
+                "Stakeholder": record["FormalStakeholder"],
                 "Mission": record["Mission"],
                 "Mission Statement": record.get("MissionStatement"),
                 "Goal": record["Goal"],

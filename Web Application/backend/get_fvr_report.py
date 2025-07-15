@@ -72,7 +72,7 @@ def get_carbon_fvr_report_stakeholder(action: str):
                     "Goal Statement": record["goal_statement"],
                     "Action": record["action"],
                     "Action Statement": record["action_statement"],
-                    "Programme": record["programme"],
+                    "Initiative": record["programme"],
                     "Report Summary": record["report_summary"],
                     "Report Stakeholder": record["formal_stakeholder"],
                     "Stakeholder Category": record["report_category"]
@@ -145,7 +145,7 @@ def get_water_fvr_report_stakeholder(action: str):
                     "Goal Statement": record["goal_statement"],
                     "Action": record["action"],
                     "Action Statement": record["action_statement"],
-                    "Programme": record["programme"],
+                    "Initiative": record["programme"],
                     "Report Summary": record["report_summary"],
                     "Report Stakeholder": record["formal_stakeholder"],
                     "Stakeholder Category": record["report_category"]
@@ -218,7 +218,7 @@ def get_livelihood_fvr_report_stakeholder(action: str):
                     "Goal Statement": record["goal_statement"],
                     "Action": record["action"],
                     "Action Statement": record["action_statement"],
-                    "Programme": record["programme"],
+                    "Initiative": record["programme"],
                     "Report Summary": record["report_summary"],
                     "Report Stakeholder": record["formal_stakeholder"],
                     "Stakeholder Category": record["report_category"]
@@ -287,7 +287,7 @@ def get_carbon2_fvr_report_stakeholder(action: str):
                     "Goal Statement": record["goal_statement"],
                     "Action": record["action"],
                     "Action Statement": record["action_statement"],
-                    "Programme": record["programme"],
+                    "Initiative": record["programme"],
                     "Report Summary": record["report_summary"],
                     "Report Stakeholder": record["report_label"]
                 })
@@ -355,7 +355,7 @@ def get_water2_fvr_report_stakeholder(action: str):
                     "Goal Statement": record["goal_statement"],
                     "Action": record["action"],
                     "Action Statement": record["action_statement"],
-                    "Programme": record["programme"],
+                    "Initiative": record["programme"],
                     "Report Summary": record["report_summary"],
                     "Report Stakeholder": record["report_label"]
                 })
@@ -423,7 +423,7 @@ def get_live2_fvr_report_stakeholder(action: str):
                     "Goal Statement": record["goal_statement"],
                     "Action": record["action"],
                     "Action Statement": record["action_statement"],
-                    "Programme": record["programme"],
+                    "Initiative": record["programme"],
                     "Report Summary": record["report_summary"],
                     "Report Stakeholder": record["report_label"]
                 })

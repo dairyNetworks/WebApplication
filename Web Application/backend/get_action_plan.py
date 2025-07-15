@@ -24,7 +24,7 @@ def get_carbon_action_plan_stakeholder(file_name: str, action: str):
         table = []
         for record in results:
             table.append({
-                "Action Plan File": record["File Name"],
+                "File Name": record["File Name"],
                 "Action": record["Action"],
                 "Stakeholder" : record["Stakeholder"],
                 "Category" : record["Category"]
@@ -49,7 +49,7 @@ def get_water_action_plan_stakeholder(file_name: str, action: str):
         table = []
         for record in results:
             table.append({
-                "Action Plan File": record["File Name"],
+                "File Name": record["File Name"],
                 "Action": record["Action"],
                 "Stakeholder" : record["Stakeholder"],
                 "Category" : record["Category"]
@@ -75,7 +75,7 @@ def get_livelihood_action_plan_stakeholder(file_name: str, action: str):
         table = []
         for record in results:
             table.append({
-                "Action Plan File": record["File Name"],
+                "File Name": record["File Name"],
                 "Action": record["Action"],
                 "Stakeholder" : record["Stakeholder"],
                 "Category" : record["Category"]
@@ -98,7 +98,7 @@ def get_carbon2_action_plan_stakeholder(file_name: str, action: str):
         table = []
         for record in results:
             table.append({
-                "Action Plan File": record["File Name"],
+                "File Name": record["File Name"],
                 "Action": record["Action"],
                 "Stakeholder" : record["Labels"]
             })
@@ -120,7 +120,7 @@ def get_water2_action_plan_stakeholder(file_name: str, action: str):
         table = []
         for record in results:
             table.append({
-                "Action Plan File": record["File Name"],
+                "File Name": record["File Name"],
                 "Action": record["Action"],
                 "Stakeholder" : record["Labels"]
             })
@@ -143,7 +143,7 @@ def get_livelihood2_action_plan_stakeholder(file_name: str, action: str):
         table = []
         for record in results:
             table.append({
-                "Action Plan File": record["File Name"],
+                "File Name": record["File Name"],
                 "Action": record["Action"],
                 "Stakeholder" : record["Labels"]
             })
